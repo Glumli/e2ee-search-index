@@ -6,6 +6,7 @@ import {
   getUser,
   resetDataBase,
 } from "./sdk";
+import { matches } from "./validation";
 
 // Add methods to window so that methods can be tested.
 declare global {
@@ -21,4 +22,5 @@ window.HPI = window.HPI || {
   fetchResource,
   fetchResourceIds,
   resetDataBase,
+  matches,
 };

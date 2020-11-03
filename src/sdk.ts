@@ -15,19 +15,22 @@ import {
 } from "./crypto";
 import database from "./backend";
 
-const USERID = "Glumli";
-const PASSWORD = "password12345";
-
 export interface User {
   commonKey: string | CryptoKey;
   privateKey: string | CryptoKey;
   publicKey: string | CryptoKey;
 }
 
-const setupUser = async (
-  userId: string = USERID,
-  password: string = PASSWORD
-) => {
+interface Identifier {
+  value: string;
+}
+export interface Resource {
+  id?: string;
+  resourceType: string;
+  identifier?: Identifier[];
+}
+
+export const setupUser = async (userId: string, password: string) => {
   const passwordKey = await deriveKey(password);
   const commonKey = await generateSymKey();
   const exportedCommonKey = await exportSymKeyToBase64(commonKey);
@@ -44,9 +47,9 @@ const setupUser = async (
   return { commonKey, privateKey, publicKey };
 };
 
-const getUser = async (
-  userId: string = USERID,
-  password: string = PASSWORD
+export const getUser = async (
+  userId: string,
+  password: string
 ): Promise<User> => {
   const passwordKey = await deriveKey(password);
   const encrypedUser = await database.fetchUser(userId);
@@ -64,13 +67,17 @@ const getUser = async (
   return { commonKey, privateKey, publicKey };
 };
 
-const createResource = async (userId: string, resource: Object) => {
+export const createResource = async (
+  userId: string,
+  password: string,
+  resource: Resource
+): Promise<Resource> => {
   const dataKey = await generateSymKey();
   const encryptedResource = await symEncryptString(
     dataKey,
     JSON.stringify(resource)
   );
-  const { commonKey } = await getUser(userId);
+  const { commonKey } = await getUser(userId, password);
   const encryptedDataKey = await symEncryptString(
     commonKey as CryptoKey,
     await exportSymKeyToBase64(dataKey)
@@ -83,11 +90,12 @@ const createResource = async (userId: string, resource: Object) => {
     .then((resourceId) => ({ ...resource, id: resourceId }));
 };
 
-const fetchResource = async (
+export const fetchResource = async (
   userId: string,
+  password: string,
   resourceId: string
-): Promise<Object> => {
-  const { commonKey } = await getUser(userId);
+): Promise<Resource> => {
+  const { commonKey } = await getUser(userId, password);
   const { resource: encryptedResource, key } = await database.fetchResource(
     userId,
     resourceId
@@ -101,17 +109,8 @@ const fetchResource = async (
   return { ...resource, id: resourceId };
 };
 
-const fetchResourceIds = async (userId: string): Promise<string[]> => {
+export const fetchResourceIds = async (userId: string): Promise<string[]> => {
   return await database.fetchResourceIds(userId);
 };
 
-const resetDataBase = () => database.reset();
-
-export {
-  createResource,
-  fetchResource,
-  fetchResourceIds,
-  setupUser,
-  getUser,
-  resetDataBase,
-};
+export const resetDataBase = () => database.reset();
