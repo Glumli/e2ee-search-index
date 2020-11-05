@@ -13,10 +13,8 @@ const getVariableName = (path) =>
 
 function getFiles(dirname) {
   let files = [];
-  console.log({ dirname });
   readdirSync(dirname).forEach((dirContent) => {
     const contentPath = resolve(dirname, dirContent);
-    console.log({ contentPath });
     const contentStat = statSync(contentPath);
     if (contentStat.isDirectory()) {
       const dirFiles = getFiles(`${dirname}/${dirContent}`);
@@ -32,16 +30,13 @@ const files = getFiles(RESOURCE_DIR);
 let code = "";
 files.forEach((file) => {
   const variableName = getVariableName(file);
-  console.log(variableName);
   code = `${code}import ${variableName} from "${file}";\n`;
 });
 code = `${code}\nexport default {\n`;
 files.forEach((file) => {
   const variableName = getVariableName(file);
-  console.log(variableName);
   code = `${code}  ${variableName},\n`;
 });
 code = `${code}};\n`;
 
-console.log(code);
 writeFileSync(FILE_PATH, code);

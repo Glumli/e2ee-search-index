@@ -30,7 +30,39 @@ export interface Resource {
   identifier?: Identifier[];
 }
 
-export const setupUser = async (userId: string, password: string) => {
+export const getUser = async (
+  userId: string,
+  password: string
+): Promise<User | false> => {
+  const encrypedUser = await database.fetchUser(userId);
+  if (!encrypedUser) return false;
+
+  const passwordKey = await deriveKey(password);
+
+  const publicKey = await importPublicKeyFromSPKI(
+    encrypedUser.publicKey as string
+  );
+
+  const privateKey = await symDecryptString(
+    passwordKey,
+    encrypedUser.privateKey as string
+  ).then(importPrivateKeyFromPKCS8);
+
+  const commonKey = await asymDecryptString(
+    privateKey,
+    encrypedUser.commonKey as string
+  ).then(importSymKeyFromBase64);
+
+  return { commonKey, privateKey, publicKey };
+};
+
+export const setupUser = async (
+  userId: string,
+  password: string
+): Promise<User> => {
+  const user = await getUser(userId, password);
+  if (user) return user;
+
   const passwordKey = await deriveKey(password);
   const commonKey = await generateSymKey();
   const exportedCommonKey = await exportSymKeyToBase64(commonKey);
@@ -47,37 +79,20 @@ export const setupUser = async (userId: string, password: string) => {
   return { commonKey, privateKey, publicKey };
 };
 
-export const getUser = async (
-  userId: string,
-  password: string
-): Promise<User> => {
-  const passwordKey = await deriveKey(password);
-  const encrypedUser = await database.fetchUser(userId);
-  const publicKey = await importPublicKeyFromSPKI(
-    encrypedUser.publicKey as string
-  );
-  const privateKey = await symDecryptString(
-    passwordKey,
-    encrypedUser.privateKey as string
-  ).then(importPrivateKeyFromPKCS8);
-  const commonKey = await asymDecryptString(
-    privateKey,
-    encrypedUser.commonKey as string
-  ).then(importSymKeyFromBase64);
-  return { commonKey, privateKey, publicKey };
-};
-
 export const createResource = async (
   userId: string,
   password: string,
   resource: Resource
 ): Promise<Resource> => {
+  const user = await getUser(userId, password);
+  if (!user) throw new Error(`User ${userId} does not exist.`);
+  const { commonKey } = user;
+
   const dataKey = await generateSymKey();
   const encryptedResource = await symEncryptString(
     dataKey,
     JSON.stringify(resource)
   );
-  const { commonKey } = await getUser(userId, password);
   const encryptedDataKey = await symEncryptString(
     commonKey as CryptoKey,
     await exportSymKeyToBase64(dataKey)
@@ -95,7 +110,10 @@ export const fetchResource = async (
   password: string,
   resourceId: string
 ): Promise<Resource> => {
-  const { commonKey } = await getUser(userId, password);
+  const user = await getUser(userId, password);
+  if (!user) throw new Error(`User ${userId} does not exist.`);
+  const { commonKey } = user;
+
   const { resource: encryptedResource, key } = await database.fetchResource(
     userId,
     resourceId

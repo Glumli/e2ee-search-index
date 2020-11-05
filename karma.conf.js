@@ -12,10 +12,13 @@ module.exports = function (config) {
       coverageOptions: {
         instrumentation: false,
       },
+      bundlerOptions: {
+        sourceMap: true,
+      },
     },
 
     reporters: ["mocha", "karma-typescript"],
 
-    browsers: ["ChromeHeadless"],
+    browsers: ["Chrome"],
   });
 };

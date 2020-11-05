@@ -14,4 +14,4 @@ const search = async (
   return resources.filter((resource) => matches(resource, query, resources));
 };
 
-export default { search } as SearchAlgorithm;
+export default { search, preprocessing: () => ({}) } as SearchAlgorithm;

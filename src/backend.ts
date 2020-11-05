@@ -54,14 +54,17 @@ class DataBase {
       });
   }
 
-  async fetchUser(userId: string): Promise<User> {
+  async fetchUser(userId: string): Promise<User | false> {
     return (await this.db)
       .get("users", userId)
-      .then((user: DBUser) => ({
-        commonKey: user.common_key,
-        privateKey: user.private_key,
-        publicKey: user.public_key,
-      }))
+      .then((user: DBUser) => {
+        if (!user) return false;
+        return {
+          commonKey: user.common_key,
+          privateKey: user.private_key,
+          publicKey: user.public_key,
+        };
+      })
       .catch((error: Error) => {
         console.warn(error);
         throw error;

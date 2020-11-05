@@ -1,9 +1,15 @@
-import { matches } from "./validation";
+import {
+  findReferences,
+  matches,
+  getReferenceIdentifierNew,
+} from "./validation";
+
+import testResources from "./testResources";
 
 describe("matches", () => {
   const resource = {
     id: "id1",
-    resourceType: "testResource",
+    resourceType: "TestResource",
     string: "test1",
     bool: true,
     reference: { identifier: { value: "id2" } },
@@ -11,13 +17,13 @@ describe("matches", () => {
   const context = [
     {
       id: "id2",
-      resourceType: "testResource",
+      resourceType: "TestResource",
       reference: { identifier: { value: "id3" } },
       string: "test2",
     },
     {
       id: "id3",
-      resourceType: "testResource",
+      resourceType: "TestResource",
       reference: { identifier: { value: "id1" } },
       string: "test3",
     },
@@ -49,7 +55,7 @@ describe("matches", () => {
       matches(
         resource,
         {
-          path: "reference.string",
+          path: "reference:TestResource.string",
           operator: "eq",
           value: "test2",
         },
@@ -57,18 +63,38 @@ describe("matches", () => {
       )
     ).toBeTruthy();
   });
+});
 
-  it("multi id references", () => {
-    expect(
-      matches(
-        resource,
-        {
-          path: "reference.reference.reference.string",
-          operator: "eq",
-          value: "test1",
-        },
-        context
+describe("findReferences", () => {
+  it("returns pathes to references", () => {
+    const references = findReferences(
+      testResources.S4hDocrefWithPngExampleDocumentreference
+    );
+    expect(references).toEqual(["subject", "author.0", "context.encounter.0"]);
+
+    const referenceIdentifier = references.map((path) =>
+      getReferenceIdentifierNew(
+        testResources.S4hDocrefWithPngExampleDocumentreference,
+        path
       )
-    ).toBeTruthy();
+    );
+  });
+});
+
+describe("getReferenceIdentifier", () => {
+  it("returns identifier for a given resource and path", () => {
+    const paths = ["subject", "author.0", "context.encounter.0"];
+    const referenceIdentifier = paths.map((path) =>
+      getReferenceIdentifierNew(
+        testResources.S4hDocrefWithPngExampleDocumentreference,
+        path
+      )
+    );
+
+    expect(referenceIdentifier).toEqual([
+      "CD9B26EA-234E-46BB-91A1-D67B23064396",
+      "clinic-xyz",
+      "test-initial",
+    ]);
   });
 });
