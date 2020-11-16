@@ -1,46 +1,22 @@
-import { readdirSync, statSync, writeFileSync } from "fs";
-import { resolve } from "path";
-
-import { createResource, resetDataBase, setupUser } from "../sdk";
+import {
+  createResource,
+  fetchResource,
+  resetDataBase,
+  setupUser,
+} from "../sdk";
 import searchAlgorithms from "./search";
-import testResources from "../testResources";
+import testResources from "../resources/testResources";
+import testCases from "./testcases.json";
+import * as SDK from "../sdk";
 
 const USERID = "Glumli";
 const PASSWORD = "password123";
 
-const testCases = [
-  {
-    query: {
-      base: "DocumentReference",
-      path: "subject:Patient.gender",
-      operator: "eq",
-      value: "female",
-    },
-    result: { length: 4 },
-  },
-  {
-    query: {
-      base: "Encounter",
-      path: "subject:Patient.gender",
-      operator: "eq",
-      value: "female",
-    },
-    result: { length: 8 },
-  },
-  {
-    query: {
-      path: "subject:Patient.gender",
-      operator: "eq",
-      value: "female",
-    },
-    result: { length: 12 },
-  },
-];
-
 const indices: { [key: string]: any } = {};
 
 describe("search", () => {
-  let fetchResourceSpy;
+  let fetchResourceSpy: jasmine.Spy;
+  let output: string;
   beforeAll(async () => {
     await resetDataBase();
     await setupUser(USERID, PASSWORD);
@@ -54,13 +30,27 @@ describe("search", () => {
       const preprocessing = searchAlgorithms[algorithmName].preprocessing;
       indices[algorithmName] = preprocessing(uploadedResouces);
     });
+
+    fetchResourceSpy = spyOn(SDK, "fetchResource").and.callThrough();
+    output = "Search\n";
   });
+
+  afterAll(() => {
+    console.log(output);
+  });
+
   beforeEach(() => {});
 
-  afterEach(() => {});
+  afterEach(() => {
+    fetchResourceSpy.calls.reset();
+  });
 
   Object.keys(searchAlgorithms).forEach((algorithmName) => {
     describe(algorithmName, () => {
+      beforeAll(() => {
+        output = `${output}  ${algorithmName}\n`;
+      });
+
       testCases.forEach(({ query, result }) => {
         it(`${query.base}/${query.path} ${query.operator} ${query.value}`, async (done) => {
           const searchResult = await searchAlgorithms[algorithmName].search(
@@ -70,6 +60,9 @@ describe("search", () => {
             indices[algorithmName]
           );
           expect(searchResult.length).toEqual(result.length);
+          output = `${output}    ${query.base}/${query.path} ${
+            query.operator
+          } ${query.value}: ${fetchResourceSpy.calls.count()}\n`;
           done();
         });
       });

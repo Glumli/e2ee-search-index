@@ -26,17 +26,21 @@ function getFiles(dirname) {
   return files;
 }
 
-const files = getFiles(RESOURCE_DIR);
-let code = "";
-files.forEach((file) => {
-  const variableName = getVariableName(file);
-  code = `${code}import ${variableName} from "${file}";\n`;
-});
-code = `${code}\nexport default {\n`;
-files.forEach((file) => {
-  const variableName = getVariableName(file);
-  code = `${code}  ${variableName},\n`;
-});
-code = `${code}};\n`;
+function generateResourcesFile(inputDir, outputFile) {
+  const files = getFiles(inputDir);
+  let code = "";
+  files.forEach((file) => {
+    const variableName = getVariableName(file);
+    code = `${code}import ${variableName} from "${file}";\n`;
+  });
+  code = `${code}\nexport default {\n`;
+  files.forEach((file) => {
+    const variableName = getVariableName(file);
+    code = `${code}  ${variableName},\n`;
+  });
+  code = `${code}};\n`;
 
-writeFileSync(FILE_PATH, code);
+  writeFileSync(outputFile, code);
+}
+
+module.exports = { generateResourcesFile, getFiles };
