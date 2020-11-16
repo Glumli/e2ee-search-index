@@ -1,0 +1,28 @@
+[
+  {
+    "query": {
+      "base": "Procedure",
+      "path": "subject:Patient.gender",
+      "operator": "eq",
+      "value": "male"
+    },
+    "result": { "length": 8 }
+  },
+  {
+    "query": {
+      "base": "Encounter",
+      "path": "subject:Patient.gender",
+      "operator": "eq",
+      "value": "male"
+    },
+    "result": { "length": 20 }
+  },
+  {
+    "query": {
+      "path": "subject:Patient.gender",
+      "operator": "eq",
+      "value": "male"
+    },
+    "result": { "length": 172 }
+  }
+]
