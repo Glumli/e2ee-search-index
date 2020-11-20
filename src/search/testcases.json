@@ -2,7 +2,9 @@
   {
     "query": {
       "base": "Procedure",
-      "path": "subject:Patient.gender",
+      "baseparameter": "subject",
+      "target": "Patient",
+      "targetparameter": "gender",
       "operator": "eq",
       "value": "male"
     },
@@ -11,7 +13,9 @@
   {
     "query": {
       "base": "Encounter",
-      "path": "subject:Patient.gender",
+      "baseparameter": "subject",
+      "target": "Patient",
+      "targetparameter": "gender",
       "operator": "eq",
       "value": "male"
     },
@@ -19,10 +23,13 @@
   },
   {
     "query": {
-      "path": "subject:Patient.gender",
+      "base": "Observation",
+      "baseparameter": "subject",
+      "target": "Patient",
+      "targetparameter": "gender",
       "operator": "eq",
       "value": "male"
     },
-    "result": { "length": 172 }
+    "result": { "length": 103 }
   }
 ]

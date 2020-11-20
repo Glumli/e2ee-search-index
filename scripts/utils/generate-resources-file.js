@@ -1,8 +1,6 @@
 const { readdirSync, statSync, writeFileSync } = require("fs");
 const { resolve } = require("path");
 
-const RESOURCE_DIR = `${__dirname}/../src/resources`;
-const FILE_PATH = `${__dirname}/../src/testResources.ts`;
 const getVariableName = (path) =>
   path
     .split("/")

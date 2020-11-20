@@ -20,7 +20,6 @@ describe("search", () => {
   beforeAll(async () => {
     await resetDataBase();
     await setupUser(USERID, PASSWORD);
-
     const uploadedResouces = await Promise.all(
       Object.values(testResources).map((resource) =>
         createResource(USERID, PASSWORD, resource)
@@ -52,7 +51,7 @@ describe("search", () => {
       });
 
       testCases.forEach(({ query, result }) => {
-        it(`${query.base}/${query.path} ${query.operator} ${query.value}`, async (done) => {
+        it(`${query.base}/${query.baseparameter} ${query.operator} ${query.value}`, async (done) => {
           const searchResult = await searchAlgorithms[algorithmName].search(
             USERID,
             PASSWORD,
@@ -60,7 +59,7 @@ describe("search", () => {
             indices[algorithmName]
           );
           expect(searchResult.length).toEqual(result.length);
-          output = `${output}    ${query.base}/${query.path} ${
+          output = `${output}    ${query.base}/${query.baseparameter} ${
             query.operator
           } ${query.value}: ${fetchResourceSpy.calls.count()}\n`;
           done();

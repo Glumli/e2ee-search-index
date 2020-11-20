@@ -1,8 +1,13 @@
 import { fetchResource, Resource } from "../sdk";
-import { findReferences, getReferenceIdentifierNew } from "../validation";
+import {
+  findReferences,
+  getReferenceIdentifierNew,
+  validate,
+} from "../validation";
 import { SearchAlgorithm } from "./search";
 import { matches, Query } from "../validation";
 import { splitQuery } from "../resourceUtils";
+import { processQuery } from "../parameterMapping";
 
 interface BasicIndex {
   [resourceId: string]: {
@@ -52,9 +57,10 @@ const search = async (
       (id) => index[id].resourceType === query.base
     );
   }
-  const { basePath, target, targetPath } = splitQuery(query.path);
+
+  // TODO: Maybe adjust index to have the parameters instead of the paths?
+  const { basepath, target, targetpath } = processQuery(query);
   // If target is not set this means that there is no reference
-  // TODO: What if target === base? ==> As working with ids only this should not be an issue
   if (target) {
     const tempTargetContext = Object.keys(index).filter(
       (id) => index[id].resourceType === target
@@ -65,7 +71,7 @@ const search = async (
       let returnValue = false;
       // .some as we expect every identifier to only be used once
       index[id].references.some(({ path, id }) => {
-        if (path === basePath) {
+        if (path === basepath) {
           const matchingTarget = tempTargetContext.find(
             (targetId) =>
               targetId === id ||
@@ -87,7 +93,7 @@ const search = async (
     contextIds.map((id) => fetchResource(userId, password, id))
   );
 
-  return context.filter((resource) => matches(resource, query, context));
+  return context.filter((resource) => validate(resource, query, context));
 };
 
 export default { preprocessing: generateIndex, search } as SearchAlgorithm;
