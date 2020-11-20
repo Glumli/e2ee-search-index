@@ -4,8 +4,6 @@ import {
   getReferenceIdentifierNew,
 } from "./validation";
 
-import testResources from "./resources/testResources";
-
 const resource = {
   id: "id1",
   resourceType: "TestResource",
@@ -31,22 +29,47 @@ const context = [
 describe("matches", () => {
   it("string", () => {
     expect(
-      matches(resource, { path: "string", operator: "eq", value: "test1" })
+      matches(resource, {
+        base: "TestResource",
+        basepath: "string",
+        operator: "eq",
+        value: "test1",
+      })
     ).toBeTruthy();
     expect(
-      matches(resource, { path: "string", operator: "eq", value: true })
+      matches(resource, {
+        base: "TestResource",
+        basepath: "string",
+        operator: "eq",
+        value: true,
+      })
     ).toBeFalsy();
   });
 
   it("bool", () => {
     expect(
-      matches(resource, { path: "bool", operator: "eq", value: true })
+      matches(resource, {
+        base: "TestResource",
+        basepath: "bool",
+        operator: "eq",
+        value: true,
+      })
     ).toBeTruthy();
     expect(
-      matches(resource, { path: "bool", operator: "eq", value: false })
+      matches(resource, {
+        base: "TestResource",
+        basepath: "bool",
+        operator: "eq",
+        value: false,
+      })
     ).toBeFalsy();
     expect(
-      matches(resource, { path: "bool", operator: "eq", value: "true" })
+      matches(resource, {
+        base: "TestResource",
+        basepath: "bool",
+        operator: "eq",
+        value: "true",
+      })
     ).toBeFalsy();
   });
 
@@ -55,7 +78,10 @@ describe("matches", () => {
       matches(
         resource,
         {
-          path: "reference:TestResource.string",
+          base: "TestResource",
+          basepath: "reference",
+          target: "TestResource",
+          targetpath: "string",
           operator: "eq",
           value: "test2",
         },

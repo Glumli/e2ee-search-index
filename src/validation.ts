@@ -2,10 +2,22 @@ import get from "lodash.get";
 import isUndefined from "lodash.isundefined";
 import { Resource } from "./sdk";
 import { QUERY_ERROR } from "./resourceUtils";
+import { processQuery } from "./parameterMapping";
 
 export interface Query {
-  base?: string;
-  path: string;
+  base: string;
+  baseparameter: string;
+  target?: string;
+  targetparameter?: string;
+  operator: string;
+  value: any;
+}
+
+export interface ProcessedQuery {
+  base: string;
+  basepath: string;
+  target?: string;
+  targetpath?: string;
   operator: string;
   value: any;
 }
@@ -97,33 +109,32 @@ const getReference = (identifier: string, resources: Resource[]) => {
 
 export const matches = (
   resource: Resource,
-  query: Query,
+  query: ProcessedQuery,
   context?: Resource[]
 ): boolean => {
-  if (query.base && query.base !== resource.resourceType) return false;
+  if (query.base !== resource.resourceType) return false;
+  // const processedQuery = processQuery(query);
 
-  const splitPath = query.path.split(":");
-  const basePath = splitPath[0];
   // Query contains a reference
-  if (splitPath.length > 1) {
-    // More than two ":"
-    if (splitPath.length > 2) throw new Error(QUERY_ERROR);
-
-    const remainder = splitPath[1].split(".");
-    // No query after the target resourceType
-    if (remainder.length < 2) throw new Error(QUERY_ERROR);
-
-    const [target, ...path] = remainder;
-    const targetPath = path.join(".");
-    const referenceIdentifier = getReferenceIdentifierNew(resource, basePath);
+  if (query.target) {
+    const referenceIdentifier = getReferenceIdentifierNew(
+      resource,
+      query.basepath
+    );
     if (!referenceIdentifier) return false;
 
     const reference = getReference(referenceIdentifier, context);
     if (!reference) return false;
 
-    return matches(reference, { ...query, base: target, path: targetPath });
+    return matches(reference, {
+      ...query,
+      base: query.target,
+      basepath: query.targetpath,
+      target: null,
+      targetpath: null,
+    });
   }
-  const resourceValue = get(resource, basePath);
+  const resourceValue = get(resource, query.basepath);
   // No value found for the given path
   if (isUndefined(resourceValue)) return false;
 
@@ -133,4 +144,12 @@ export const matches = (
     default:
       throw new Error(`Operator ${query.operator} is not implemented yet.`);
   }
+};
+
+export const validate = (
+  resource: Resource,
+  query: Query,
+  context?: Resource[]
+): boolean => {
+  return matches(resource, processQuery(query), context);
 };
