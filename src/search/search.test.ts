@@ -21,9 +21,14 @@ describe("search", () => {
     await resetDataBase();
     await setupUser(USERID, PASSWORD);
     const uploadedResouces = await Promise.all(
-      Object.values(testResources).map((resource) =>
-        createResource(USERID, PASSWORD, resource)
-      )
+      Object.values(testResources).map((resource: SDK.Resource) => {
+        const identifier = resource.identifier ? resource.identifier : [];
+        const identifierResource = {
+          ...resource,
+          identifier: [...identifier, { value: resource.id }],
+        };
+        return createResource(USERID, PASSWORD, identifierResource);
+      })
     );
     Object.keys(searchAlgorithms).forEach((algorithmName) => {
       const preprocessing = searchAlgorithms[algorithmName].preprocessing;
@@ -51,19 +56,23 @@ describe("search", () => {
       });
 
       testCases.forEach(({ query, result }) => {
-        it(`${query.base}/${query.baseparameter} ${query.operator} ${query.value}`, async (done) => {
-          const searchResult = await searchAlgorithms[algorithmName].search(
-            USERID,
-            PASSWORD,
-            query,
-            indices[algorithmName]
-          );
-          expect(searchResult.length).toEqual(result.length);
-          output = `${output}    ${query.base}/${query.baseparameter} ${
-            query.operator
-          } ${query.value}: ${fetchResourceSpy.calls.count()}\n`;
-          done();
-        });
+        if (query.base === "Claim" || true) {
+          it(`${query.base}/${query.baseparameter} ${query.operator} ${query.value}`, async (done) => {
+            const searchResult = await searchAlgorithms[algorithmName].search(
+              USERID,
+              PASSWORD,
+              query,
+              indices[algorithmName]
+            );
+            expect(searchResult.length).toEqual(result.length);
+            output = `${output}    ${query.base}/${query.baseparameter} ${
+              query.operator
+            } ${query.value}: ${fetchResourceSpy.calls.count()} fetches for ${
+              result.length
+            } resources\n`;
+            done();
+          });
+        }
       });
     });
   });

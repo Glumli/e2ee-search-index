@@ -94,7 +94,7 @@ describe("matches", () => {
 describe("findReferences", () => {
   it("returns pathes to references", () => {
     const references = findReferences(resource);
-    expect(references).toEqual(["reference"]);
+    expect(references).toEqual([{ FHIRPath: "reference", path: "reference" }]);
   });
 });
 
@@ -105,6 +105,6 @@ describe("getReferenceIdentifier", () => {
       getReferenceIdentifierNew(resource, path)
     );
 
-    expect(referenceIdentifier).toEqual(["id2"]);
+    expect(referenceIdentifier).toEqual([["id2"]]);
   });
 });

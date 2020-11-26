@@ -20,5 +20,11 @@ module.exports = function (config) {
     reporters: ["mocha", "karma-typescript"],
 
     browsers: ["Chrome"],
+
+    client: {
+      jasmine: {
+        timeoutInterval: 15000,
+      },
+    },
   });
 };
