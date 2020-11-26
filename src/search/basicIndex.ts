@@ -27,10 +27,16 @@ const getResourceIdentifier = (resource: Resource): string[] => {
 const generateIndex = (resources: Resource[]) => {
   return resources.reduce((index, resource) => {
     const references = findReferences(resource);
-    const entries = references.map((reference) => ({
-      path: reference,
-      id: getReferenceIdentifierNew(resource, reference),
-    }));
+    const entries = references.reduce(
+      (current, reference) => [
+        ...current,
+        ...getReferenceIdentifierNew(resource, reference.path).map((id) => ({
+          path: reference.FHIRPath,
+          id: id,
+        })),
+      ],
+      []
+    );
     return {
       ...index,
       [resource.id]: {

@@ -1,5 +1,7 @@
 import get from "lodash.get";
 import isUndefined from "lodash.isundefined";
+import isArray from "lodash.isarray";
+import has from "lodash.has";
 import { Resource } from "./sdk";
 import { QUERY_ERROR } from "./resourceUtils";
 import { processQuery } from "./parameterMapping";
@@ -14,7 +16,7 @@ export interface Query {
 }
 
 export interface ProcessedQuery {
-  base: string;
+  base?: string;
   basepath: string;
   target?: string;
   targetpath?: string;
@@ -59,26 +61,42 @@ const isReferenceNew = (reference: { identifier: object }) => {
   return true;
 };
 
+// returns an object with two different paths as FHIR paths ignore weather a property is an array or not.
 export const findReferences = (
   object: { [key: string]: any },
-  path = ""
-): string[] => {
-  return Object.keys(object).reduce((current: string[], key) => {
-    const currentPath = path ? `${path}.${key}` : key;
-    if (isReferenceNew(object[key])) {
-      current.push(currentPath);
-    } else if (typeof object[key] === "object") {
-      current = [...current, ...findReferences(object[key], currentPath)];
-    }
+  { path = "", FHIRPath = "" } = {}
+): { path: string; FHIRPath: string }[] => {
+  const oIsArray = isArray(object);
+  return Object.keys(object).reduce(
+    (current: { path: string; FHIRPath: string }[], key) => {
+      const currentPath = path ? `${path}.${key}` : key;
+      const currentFHIRPath = oIsArray
+        ? FHIRPath
+        : FHIRPath
+        ? `${FHIRPath}.${key}`
+        : key;
+      const res = { path: currentPath, FHIRPath: currentFHIRPath };
+      if (isReferenceNew(object[key])) {
+        current.push(res);
+      } else if (typeof object[key] === "object") {
+        current = [...current, ...findReferences(object[key], res)];
+      }
 
-    return current;
-  }, []);
+      return current;
+    },
+    []
+  );
 };
 
-export const getReferenceIdentifierNew = (resource: Resource, path: string) => {
+export const getReferenceIdentifierNew = (
+  resource: Resource,
+  path: string
+): string[] => {
   const reference = get(resource, path);
-  if (!reference) return false;
-  return reference.reference || reference.identifier?.value;
+  if (!reference) return [];
+  return isArray(reference)
+    ? reference.map((ref) => ref.reference || ref.identifier?.value)
+    : [reference.reference || reference.identifier?.value];
 };
 
 // TODO: Clean up and split
@@ -107,13 +125,53 @@ const getReference = (identifier: string, resources: Resource[]) => {
   );
 };
 
+const codingEquals = (
+  a: { system?: string; code?: string } = {},
+  b: { system?: string; code?: string } = {}
+): boolean => {
+  const systemSet = has(a, "system") && has(b, "system");
+  const codeSet = has(a, "code") && has(b, "code");
+  const systemEquals = a.system === b.system;
+  const codeEquals = a.code === b.code;
+
+  return (!systemSet || systemEquals) && (!codeSet || codeEquals);
+};
+
+const anyCodingEquals = (
+  codings: { system?: string; code?: string }[] = [],
+  queryValue: { system?: string; code?: string } = {}
+) => codings.some((coding) => codingEquals(coding, queryValue));
+
 export const matches = (
   resource: Resource,
   query: ProcessedQuery,
   context?: Resource[]
 ): boolean => {
-  if (query.base !== resource.resourceType) return false;
-  // const processedQuery = processQuery(query);
+  if (
+    query.base &&
+    resource.resourceType &&
+    query.base !== resource.resourceType
+  ) {
+    return false;
+  }
+
+  const splitPath = query.basepath.split(".");
+  for (let i = 1; i < splitPath.length; i++) {
+    const pathResource = get(resource, splitPath.slice(0, i).join("."));
+    if (!pathResource) return false;
+    if (isArray(pathResource))
+      return pathResource.some((res) =>
+        matches(
+          res,
+          {
+            ...query,
+            basepath: splitPath.slice(i).join("."),
+            base: null,
+          },
+          context
+        )
+      );
+  }
 
   // Query contains a reference
   if (query.target) {
@@ -121,28 +179,46 @@ export const matches = (
       resource,
       query.basepath
     );
-    if (!referenceIdentifier) return false;
 
-    const reference = getReference(referenceIdentifier, context);
-    if (!reference) return false;
+    return referenceIdentifier.some((refId) => {
+      if (!refId) return false;
+      const reference = getReference(refId, context);
+      if (!reference) return false;
 
-    return matches(reference, {
-      ...query,
-      base: query.target,
-      basepath: query.targetpath,
-      target: null,
-      targetpath: null,
+      return matches(reference, {
+        ...query,
+        base: query.target,
+        basepath: query.targetpath,
+        target: null,
+        targetpath: null,
+      });
     });
   }
+
   const resourceValue = get(resource, query.basepath);
   // No value found for the given path
-  if (isUndefined(resourceValue)) return false;
-
-  switch (query.operator) {
-    case "eq":
-      return resourceValue === query.value;
+  switch (typeof resourceValue) {
+    case "string":
+    case "number":
+    case "boolean":
+      switch (query.operator) {
+        case "eq":
+          return resourceValue === query.value;
+        default:
+          throw new Error(`Operator ${query.operator} is not implemented yet.`);
+      }
+    case "object":
+      // TODO: For now we assume that it is an array of codings
+      if (isArray(resourceValue))
+        return resourceValue.some((rv) =>
+          anyCodingEquals(rv.coding, query.value)
+        );
+      if (has(resourceValue, "coding"))
+        return anyCodingEquals(resourceValue.coding, query.value);
     default:
-      throw new Error(`Operator ${query.operator} is not implemented yet.`);
+      throw new Error(
+        `The resourcetype at path ${query.base}.${query.basepath} is not supported yet.`
+      );
   }
 };
 

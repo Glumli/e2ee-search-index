@@ -6,23 +6,6 @@ interface Mapping {
 }
 const mapping = map as Mapping;
 
-/**
- * Mapping.json
- * "ServiceRequest.patient": "ServiceRequest.subject.where(resolve() is Patient)",
- * "SupplyDelivery.patient": "SupplyDelivery.patient",
- *
- */
-
-/**
- * Structure of query:
- *      parameter
- *      referenceParameter.parameter
- *      referenceParameter:target.parameter
- */
-
-// TODO: Put more of the query work in the hands of the user (base, parameter, target, target patameter, operator, value)
-// Parameter - ResourceType - Path?
-
 const getPath = (resourcetype: string, parameter: string) => {
   if (!mapping[resourcetype])
     throw new Error(`${resourcetype} is not a supported FHIR resource.`);
