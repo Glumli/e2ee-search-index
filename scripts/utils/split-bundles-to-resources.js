@@ -15,9 +15,9 @@ function splitBundlesToResources(inputDir, outputDir) {
   resources.forEach((resource) =>
     writeFileSync(
       `${outputDir}/${resource.resourceType}${resource.id}.json`,
-      JSON.stringify(resource).replace(
-        /"reference":"urn:uuid:/g,
-        '"reference":"'
+      JSON.stringify(resource, null, 2).replace(
+        /"reference": "urn:uuid:/g,
+        '"reference": "'
       )
     )
   );
