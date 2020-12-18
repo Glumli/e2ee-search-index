@@ -1,4 +1,5 @@
 import { Query } from "../validation";
+import { Resource } from "../sdk";
 import bruteForce from "./bruteForce";
 import basicIndex from "./basicIndex";
 
@@ -6,9 +7,9 @@ export interface SearchAlgorithm {
   preprocessing?: (resources: object[]) => object;
   search: (
     userId: string,
-    password: string,
     query: Query,
-    index: any
+    index: any,
+    fetchResource: (userId: string, resourceId: string) => Promise<Resource>
   ) => Promise<object[]>;
 }
 

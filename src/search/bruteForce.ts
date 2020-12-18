@@ -4,12 +4,13 @@ import { SearchAlgorithm } from "./search";
 
 const search = async (
   userId: string,
-  password: string,
-  query: Query
+  query: Query,
+  index: {},
+  fetchResource: (userId: string, resourceId: string) => Promise<Resource>
 ): Promise<Resource[]> => {
   const resourceIds = await fetchResourceIds(userId);
   const resources = await Promise.all(
-    resourceIds.map((resourceId) => fetchResource(userId, password, resourceId))
+    resourceIds.map((resourceId) => fetchResource(userId, resourceId))
   );
   return resources.filter((resource) => validate(resource, query, resources));
 };

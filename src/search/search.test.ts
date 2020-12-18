@@ -64,11 +64,13 @@ describe("search", () => {
         // if (query.modifier) {
         it(`${query.base}/${query.baseparameter} ${query.operator} ${query.value}`, async (done) => {
           const t0 = performance.now();
-          const searchResult = await searchAlgorithms[algorithmName].search(
+          const searchResult = await searchAlgorithms[
+            algorithmName
+          ].search(
             USERID,
-            PASSWORD,
             query,
-            indices[algorithmName]
+            indices[algorithmName],
+            (userId, resourceId) => fetchResource(userId, PASSWORD, resourceId)
           );
           const t1 = performance.now();
           expect(searchResult.length).toEqual(result.length);

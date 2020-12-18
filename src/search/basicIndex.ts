@@ -1,52 +1,85 @@
-import { fetchResource, Resource } from "../sdk";
+import { Resource } from "../sdk";
 import {
   findReferences,
   getReferenceIdentifier,
   validate,
   getResourceIdentifier,
+  Query,
 } from "../validation";
 import { SearchAlgorithm } from "./search";
-import { matches, Query } from "../validation";
-import { splitQuery } from "../resourceUtils";
 import { processQuery } from "../parameterMapping";
 
 interface BasicIndex {
   [resourceId: string]: {
     resourceType: string;
-    references: [{ id: string; path: string }];
+    references: { id: string; path: string }[];
     identifier: string[];
   };
 }
 
+const deleteResource = (index: BasicIndex, resource: Resource): BasicIndex => {
+  const updatedIndex = { ...index };
+  delete updatedIndex[resource.id];
+  return updatedIndex;
+};
+
+const updateResource = (index: BasicIndex, resource: Resource): BasicIndex => {
+  const updatedIndex = { ...index };
+  delete updatedIndex[resource.id];
+  return addResource(updatedIndex, resource);
+};
+
+const addResource = (index: BasicIndex, resource: Resource): BasicIndex => {
+  const references = findReferences(resource);
+  const entries = references.reduce(
+    (current, reference): { id: string; path: string }[] => [
+      ...current,
+      ...getReferenceIdentifier(resource, reference.path).map((id) => ({
+        path: reference.FHIRPath,
+        id: id,
+      })),
+    ],
+    []
+  );
+
+  return {
+    ...index,
+    [resource.id]: {
+      references: entries,
+      resourceType: resource.resourceType,
+      identifier: getResourceIdentifier(resource),
+    },
+  };
+};
+
+const update = (
+  index: BasicIndex,
+  operation: "ADD" | "DELETE" | "UPDATE",
+  resource: Resource
+) => {
+  switch (operation) {
+    case "ADD":
+      return addResource(index, resource);
+    case "DELETE":
+      return deleteResource(index, resource);
+    case "UPDATE":
+      return updateResource(index, resource);
+    default:
+      break;
+  }
+};
+
 const generateIndex = (resources: Resource[]) => {
   return resources.reduce((index, resource) => {
-    const references = findReferences(resource);
-    const entries = references.reduce(
-      (current, reference) => [
-        ...current,
-        ...getReferenceIdentifier(resource, reference.path).map((id) => ({
-          path: reference.FHIRPath,
-          id: id,
-        })),
-      ],
-      []
-    );
-    return {
-      ...index,
-      [resource.id]: {
-        references: entries,
-        resourceType: resource.resourceType,
-        identifier: getResourceIdentifier(resource),
-      },
-    };
+    return addResource(index, resource);
   }, {});
 };
 
 const search = async (
   userId: string,
-  password: string,
   query: Query,
-  index: BasicIndex
+  index: BasicIndex,
+  fetchResource: (userId: string, resourceId: string) => Promise<Resource>
 ) => {
   // Without any information we have to see all resources as the context.
   let baseContextIds = Object.keys(index);
@@ -95,7 +128,7 @@ const search = async (
   );
 
   const context = await Promise.all(
-    contextIds.map((id) => fetchResource(userId, password, id))
+    contextIds.map((id) => fetchResource(userId, id))
   );
 
   const baseContext = context.filter(
