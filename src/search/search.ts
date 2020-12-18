@@ -11,6 +11,11 @@ export interface SearchAlgorithm {
     index: any,
     fetchResource: (userId: string, resourceId: string) => Promise<Resource>
   ) => Promise<object[]>;
+  update?: (
+    index: object,
+    operation: "ADD" | "DELETE" | "UPDATE",
+    resource: Resource
+  ) => object;
 }
 
 export default { bruteForce, basicIndex } as {
