@@ -1,8 +1,9 @@
 import { fetchResource, Resource } from "../sdk";
 import {
   findReferences,
-  getReferenceIdentifierNew,
+  getReferenceIdentifier,
   validate,
+  getResourceIdentifier,
 } from "../validation";
 import { SearchAlgorithm } from "./search";
 import { matches, Query } from "../validation";
@@ -17,20 +18,13 @@ interface BasicIndex {
   };
 }
 
-const getResourceIdentifier = (resource: Resource): string[] => {
-  if (!resource.identifier) return [];
-  return resource.identifier.reduce((current, identifier) => {
-    return identifier.value ? [...current, identifier.value] : current;
-  }, []);
-};
-
 const generateIndex = (resources: Resource[]) => {
   return resources.reduce((index, resource) => {
     const references = findReferences(resource);
     const entries = references.reduce(
       (current, reference) => [
         ...current,
-        ...getReferenceIdentifierNew(resource, reference.path).map((id) => ({
+        ...getReferenceIdentifier(resource, reference.path).map((id) => ({
           path: reference.FHIRPath,
           id: id,
         })),
@@ -55,17 +49,20 @@ const search = async (
   index: BasicIndex
 ) => {
   // Without any information we have to see all resources as the context.
-  let baseContext = Object.keys(index);
-  let targetContext: string[] = [];
+  let baseContextIds = Object.keys(index);
+  let targetContextIds: string[] = [];
 
   if (query.base) {
-    baseContext = baseContext.filter(
+    baseContextIds = baseContextIds.filter(
       (id) => index[id].resourceType === query.base
     );
   }
 
   // TODO: Maybe adjust index to have the parameters instead of the paths?
-  const { basepath, target, targetpath } = processQuery(query);
+  // Current: The path as mapped to is in the index
+  const { basepath, target, basereferencepath, targetpath } = processQuery(
+    query
+  );
   // If target is not set this means that there is no reference
   if (target) {
     const tempTargetContext = Object.keys(index).filter(
@@ -73,18 +70,18 @@ const search = async (
     );
 
     // TODO: not super clean, as IMO filter should not have sideeffects
-    baseContext = baseContext.filter((id) => {
+    baseContextIds = baseContextIds.filter((id) => {
       let returnValue = false;
       // .some as we expect every identifier to only be used once
       index[id].references.some(({ path, id }) => {
-        if (path === basepath) {
+        if (path === basereferencepath || path === basepath) {
           const matchingTarget = tempTargetContext.find(
             (targetId) =>
               targetId === id ||
               index[targetId].identifier.some((identifier) => identifier === id)
           );
           if (matchingTarget) {
-            targetContext.push(matchingTarget);
+            targetContextIds.push(matchingTarget);
             returnValue = true;
           }
         }
@@ -93,13 +90,27 @@ const search = async (
     });
   }
 
-  const contextIds = Array.from(new Set([...baseContext, ...targetContext]));
+  const contextIds = Array.from(
+    new Set([...baseContextIds, ...targetContextIds])
+  );
 
   const context = await Promise.all(
     contextIds.map((id) => fetchResource(userId, password, id))
   );
 
-  return context.filter((resource) => validate(resource, query, context));
+  const baseContext = context.filter(
+    ({ id }) => baseContextIds.indexOf(id) > -1
+  );
+
+  const targetContext = context.filter(
+    ({ id }) => targetContextIds.indexOf(id) > -1
+  );
+
+  return query.modifier !== "_has"
+    ? baseContext.filter((resource) => validate(resource, query, targetContext))
+    : targetContext.filter((resource) =>
+        validate(resource, query, baseContext)
+      );
 };
 
 export default { preprocessing: generateIndex, search } as SearchAlgorithm;

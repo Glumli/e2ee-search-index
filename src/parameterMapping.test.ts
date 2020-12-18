@@ -21,13 +21,11 @@ describe("processQuery", () => {
       base: "DocumentReference",
       baseparameter: "_lastUpdated",
       operator: "eq",
-      value: "",
     });
     expect(result).toEqual({
       base: "DocumentReference",
       basepath: "meta.lastUpdated",
       operator: "eq",
-      value: "",
     });
   });
 
@@ -38,7 +36,6 @@ describe("processQuery", () => {
       target: "Organization",
       targetparameter: "address-country",
       operator: "eq",
-      value: "",
     });
     expect(result).toEqual({
       base: "Person",
@@ -46,7 +43,6 @@ describe("processQuery", () => {
       target: "Organization",
       targetpath: "address.country",
       operator: "eq",
-      value: "",
     });
   });
 

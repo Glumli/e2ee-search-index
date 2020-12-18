@@ -19,7 +19,7 @@ module.exports = function (config) {
 
     reporters: ["mocha", "karma-typescript"],
 
-    browsers: ["Chrome"],
+    browsers: ["ChromeHeadless"],
 
     client: {
       jasmine: {

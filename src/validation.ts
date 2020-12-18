@@ -1,28 +1,38 @@
 import get from "lodash.get";
-import isUndefined from "lodash.isundefined";
 import isArray from "lodash.isarray";
 import has from "lodash.has";
 import { Resource } from "./sdk";
-import { QUERY_ERROR } from "./resourceUtils";
 import { processQuery } from "./parameterMapping";
 
 export interface Query {
   base: string;
   baseparameter: string;
+  basereferenceparameter?: string;
   target?: string;
   targetparameter?: string;
   operator: string;
-  value: any;
+  value?: any;
+  modifier?: string;
 }
 
 export interface ProcessedQuery {
-  base?: string;
+  base: string;
   basepath: string;
+  basereferencepath?: string;
   target?: string;
   targetpath?: string;
   operator: string;
-  value: any;
+  value?: any;
+  modifier?: string;
 }
+
+// returns an array of the idStrings from the identifier array
+export const getResourceIdentifier = (resource: Resource): string[] => {
+  if (!resource.identifier) return [];
+  return resource.identifier.reduce((current, identifier) => {
+    return identifier.value ? [...current, identifier.value] : current;
+  }, []);
+};
 
 const isIdentifier = (identifier: object) => {
   const isObject = typeof identifier === "object";
@@ -88,7 +98,7 @@ export const findReferences = (
   );
 };
 
-export const getReferenceIdentifierNew = (
+export const getReferenceIdentifier = (
   resource: Resource,
   path: string
 ): string[] => {
@@ -99,29 +109,23 @@ export const getReferenceIdentifierNew = (
     : [reference.reference || reference.identifier?.value];
 };
 
-// TODO: Clean up and split
-export const getReferenceIdentifier = (resource: object, path: string) => {
-  const splitPath = path.split(".");
-  for (let i = 1; i < splitPath.length; i++) {
-    let pathValue = get(resource, splitPath.slice(0, i).join("."));
-
-    // When any value before inding a reference is undefined we know that the rsource won't match
-    if (isUndefined(pathValue)) return [false, ""];
-
-    if (isReferenceNew(pathValue)) {
-      return [
-        pathValue?.identifier?.value || pathValue?.reference,
-        splitPath.slice(i, splitPath.length).join("."),
-      ];
-    }
-  }
-};
-
 const getReference = (identifier: string, resources: Resource[]) => {
   return resources.find(
     (resource) =>
       resource.id === identifier ||
       resource.identifier?.some((id) => id.value === identifier)
+  );
+};
+
+const references = (
+  base: Resource,
+  target: Resource,
+  basereferencepath: string
+): boolean => {
+  const referencedIdentifier = getReferenceIdentifier(base, basereferencepath);
+  const targetIdentifier = [...getResourceIdentifier(target), target.id];
+  return referencedIdentifier.some(
+    (refId) => targetIdentifier.indexOf(refId) > -1
   );
 };
 
@@ -147,6 +151,22 @@ export const matches = (
   query: ProcessedQuery,
   context?: Resource[]
 ): boolean => {
+  if (query.modifier === "_has") {
+    if (!query.target || query.target !== resource.resourceType) return false;
+
+    const referencingResources = context.filter((res) =>
+      references(res, resource, query.basereferencepath)
+    );
+    return referencingResources.some((res) =>
+      matches(res, {
+        base: query.base,
+        basepath: query.basepath,
+        operator: query.operator,
+        value: query.value,
+      })
+    );
+  }
+
   if (
     query.base &&
     resource.resourceType &&
@@ -175,7 +195,7 @@ export const matches = (
 
   // Query contains a reference
   if (query.target) {
-    const referenceIdentifier = getReferenceIdentifierNew(
+    const referenceIdentifier = getReferenceIdentifier(
       resource,
       query.basepath
     );

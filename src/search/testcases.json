@@ -71,5 +71,17 @@
       "value": { "code": "185345009" }
     },
     "result": { "length": 6 }
+  },
+  {
+    "query": {
+      "base": "CarePlan",
+      "baseparameter": "category",
+      "basereferenceparameter": "encounter",
+      "target": "Encounter",
+      "modifier": "_has",
+      "operator": "eq",
+      "value": { "code": "736376001" }
+    },
+    "result": { "length": 1 }
   }
 ]

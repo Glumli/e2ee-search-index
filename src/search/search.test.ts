@@ -22,6 +22,7 @@ describe("search", () => {
     await setupUser(USERID, PASSWORD);
     const uploadedResouces = await Promise.all(
       Object.values(testResources).map((resource: SDK.Resource) => {
+        // Set the identifier, as we are overwriting the id field
         const identifier = resource.identifier ? resource.identifier : [];
         const identifierResource = {
           ...resource,
@@ -30,13 +31,17 @@ describe("search", () => {
         return createResource(USERID, PASSWORD, identifierResource);
       })
     );
+    output = "Create Indices:\n";
     Object.keys(searchAlgorithms).forEach((algorithmName) => {
+      const t0 = performance.now();
       const preprocessing = searchAlgorithms[algorithmName].preprocessing;
       indices[algorithmName] = preprocessing(uploadedResouces);
+      const t1 = performance.now();
+      output += `  ${algorithmName}: ${(t1 - t0).toFixed(0)} milliseconds`;
     });
 
     fetchResourceSpy = spyOn(SDK, "fetchResource").and.callThrough();
-    output = "Search\n";
+    output += "Search\n";
   });
 
   afterAll(() => {
@@ -56,23 +61,25 @@ describe("search", () => {
       });
 
       testCases.forEach(({ query, result }) => {
-        if (query.base === "Claim" || true) {
-          it(`${query.base}/${query.baseparameter} ${query.operator} ${query.value}`, async (done) => {
-            const searchResult = await searchAlgorithms[algorithmName].search(
-              USERID,
-              PASSWORD,
-              query,
-              indices[algorithmName]
-            );
-            expect(searchResult.length).toEqual(result.length);
-            output = `${output}    ${query.base}/${query.baseparameter} ${
-              query.operator
-            } ${query.value}: ${fetchResourceSpy.calls.count()} fetches for ${
-              result.length
-            } resources\n`;
-            done();
-          });
-        }
+        // if (query.modifier) {
+        it(`${query.base}/${query.baseparameter} ${query.operator} ${query.value}`, async (done) => {
+          const t0 = performance.now();
+          const searchResult = await searchAlgorithms[algorithmName].search(
+            USERID,
+            PASSWORD,
+            query,
+            indices[algorithmName]
+          );
+          const t1 = performance.now();
+          expect(searchResult.length).toEqual(result.length);
+          output = `${output}    ${query.base}/${query.baseparameter} ${
+            query.operator
+          } ${query.value}: ${fetchResourceSpy.calls.count()} fetches for ${
+            result.length
+          } resources in ${(t1 - t0).toFixed(0)} ms\n`;
+          done();
+        });
+        // }
       });
     });
   });

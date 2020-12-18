@@ -1,5 +1,6 @@
 import map from "./parameterMapping.json";
 import { Query, ProcessedQuery } from "./validation";
+import isUndefined from "lodash.isundefined";
 
 interface Mapping {
   [base: string]: { [path: string]: any };
@@ -57,21 +58,25 @@ const handleComplexPaths = (query: ProcessedQuery) => {
 };
 
 const processQuery = (query: Query): ProcessedQuery => {
-  const processedQuery: any = {
-    base: query.base,
-    operator: query.operator,
-    value: query.value,
-  };
+  const processedQuery: any = {};
+  if (query.base) processedQuery.base = query.base;
+  if (query.operator) processedQuery.operator = query.operator;
+  if (!isUndefined(query.value)) processedQuery.value = query.value;
+  if (query.modifier) processedQuery.modifier = query.modifier;
+
   processedQuery.basepath = getPath(query.base, query.baseparameter);
 
   if (query.target) {
-    if (!query.targetparameter) {
-      throw new Error(
-        "target and targetparameter don't work indepentent from each other."
-      );
-    }
     processedQuery.target = query.target;
-    processedQuery.targetpath = getPath(query.target, query.targetparameter);
+    if (query.targetparameter) {
+      processedQuery.targetpath = getPath(query.target, query.targetparameter);
+    }
+  }
+  if (query.basereferenceparameter) {
+    processedQuery.basereferencepath = getPath(
+      query.base,
+      query.basereferenceparameter
+    );
   }
 
   return handleComplexPaths(processedQuery);

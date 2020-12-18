@@ -1,12 +1,9 @@
-import {
-  findReferences,
-  matches,
-  getReferenceIdentifierNew,
-} from "./validation";
+import { findReferences, matches, getReferenceIdentifier } from "./validation";
 
 const resource = {
   id: "id1",
   resourceType: "TestResource",
+  identifier: [{ value: "id1" }],
   string: "test1",
   bool: true,
   reference: { identifier: { value: "id2" } },
@@ -14,13 +11,13 @@ const resource = {
 const context = [
   {
     id: "id2",
-    resourceType: "TestResource",
+    resourceType: "OtherResourceType",
     reference: { identifier: { value: "id3" } },
     string: "test2",
   },
   {
     id: "id3",
-    resourceType: "TestResource",
+    resourceType: "YetAnotherResourceType",
     reference: { identifier: { value: "id1" } },
     string: "test3",
   },
@@ -80,10 +77,28 @@ describe("matches", () => {
         {
           base: "TestResource",
           basepath: "reference",
-          target: "TestResource",
+          target: "OtherResourceType",
           targetpath: "string",
           operator: "eq",
           value: "test2",
+        },
+        context
+      )
+    ).toBeTruthy();
+  });
+
+  it("reverse chaining", () => {
+    expect(
+      matches(
+        resource,
+        {
+          modifier: "_has",
+          base: "YetAnotherResourceType",
+          basepath: "string",
+          basereferencepath: "reference",
+          target: "TestResource",
+          operator: "eq",
+          value: "test3",
         },
         context
       )
@@ -102,7 +117,7 @@ describe("getReferenceIdentifier", () => {
   it("returns identifier for a given resource and path", () => {
     const paths = ["reference"];
     const referenceIdentifier = paths.map((path) =>
-      getReferenceIdentifierNew(resource, path)
+      getReferenceIdentifier(resource, path)
     );
 
     expect(referenceIdentifier).toEqual([["id2"]]);

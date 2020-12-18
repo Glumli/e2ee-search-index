@@ -12,4 +12,6 @@ export interface SearchAlgorithm {
   ) => Promise<object[]>;
 }
 
-export default { bruteForce, basicIndex } as { [key: string]: SearchAlgorithm };
+export default { bruteForce, basicIndex } as {
+  [key: string]: SearchAlgorithm;
+};
