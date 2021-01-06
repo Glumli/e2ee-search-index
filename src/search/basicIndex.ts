@@ -146,4 +146,8 @@ const search = async (
       );
 };
 
-export default { preprocessing: generateIndex, search } as SearchAlgorithm;
+export default {
+  preprocessing: generateIndex,
+  search,
+  update,
+} as SearchAlgorithm;
