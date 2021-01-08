@@ -1,3 +1,3 @@
-import basicIndex from "./search/basicIndex";
+import refIndex from "./search/refIndex";
 
-export default basicIndex;
+export default refIndex;

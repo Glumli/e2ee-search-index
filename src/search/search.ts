@@ -1,7 +1,8 @@
 import { Query } from "../validation";
 import { Resource } from "../sdk";
 import bruteForce from "./bruteForce";
-import basicIndex from "./basicIndex";
+import refIndex from "./refIndex";
+import resourceTypeIndex from "./resourceTypeIndex";
 
 export interface SearchAlgorithm {
   preprocessing?: (resources: object[]) => object;
@@ -18,6 +19,6 @@ export interface SearchAlgorithm {
   ) => object;
 }
 
-export default { bruteForce, basicIndex } as {
+export default { bruteForce, resourceTypeIndex, refIndex } as {
   [key: string]: SearchAlgorithm;
 };

@@ -5,6 +5,10 @@
 /assets/
 /dist/
 
-/src/resources/**
-/src/testResources.ts
+/src/resources/testcases/**
+/src/resources/s4h/**
+/src/resources/synthea/**
+
 /src/parameterMapping.json
+
+/out/**/*

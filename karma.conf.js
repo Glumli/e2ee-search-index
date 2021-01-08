@@ -20,10 +20,13 @@ module.exports = function (config) {
     reporters: ["mocha", "karma-typescript"],
 
     browsers: ["ChromeHeadless"],
+    browserNoActivityTimeout: 120000,
+    browserDisconnectTimeout: 120000,
+    browserDisconnectTolerance: 20,
 
     client: {
       jasmine: {
-        timeoutInterval: 15000,
+        timeoutInterval: 120000,
       },
     },
   });
