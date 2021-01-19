@@ -4,6 +4,7 @@ const resource = {
   id: "id1",
   resourceType: "TestResource",
   identifier: [{ value: "id1" }],
+  coding: [{ coding: [{ system: "a", code: "b" }] }],
   string: "test1",
   bool: true,
   reference: { identifier: { value: "id2" } },
@@ -68,6 +69,36 @@ describe("matches", () => {
         value: "true",
       })
     ).toBeFalsy();
+  });
+
+  it("identifier matches", () => {
+    expect(
+      matches(
+        resource,
+        {
+          base: "TestResource",
+          basepath: "identifier",
+          operator: "eq",
+          value: { value: "id1" },
+        },
+        context
+      )
+    ).toBeTruthy();
+  });
+
+  it("coding matches", () => {
+    expect(
+      matches(
+        resource,
+        {
+          base: "TestResource",
+          basepath: "coding",
+          operator: "eq",
+          value: { system: "a", code: "b" },
+        },
+        context
+      )
+    ).toBeTruthy();
   });
 
   it("id reference", () => {

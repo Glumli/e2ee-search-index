@@ -97,7 +97,7 @@ export const createResource = async (
     commonKey as CryptoKey,
     await exportSymKeyToBase64(dataKey)
   );
-  return await database
+  return database
     .createResource(userId, {
       resource: encryptedResource,
       key: encryptedDataKey,

@@ -5,9 +5,10 @@
 /assets/
 /dist/
 
-/src/resources/testcases/**
-/src/resources/s4h/**
-/src/resources/synthea/**
+/src/resources/testcases/**/bundles/**
+/src/resources/testcases/**/resources/**
+/src/resources/s4h/**/*
+/src/resources/synthea/**/*
 
 /src/parameterMapping.json
 

@@ -6,22 +6,22 @@ import { processQuery } from "./parameterMapping";
 
 export interface Query {
   base: string;
-  baseparameter: string;
+  baseparameter?: string;
   basereferenceparameter?: string;
   target?: string;
   targetparameter?: string;
-  operator: string;
+  operator?: string;
   value?: any;
   modifier?: string;
 }
 
 export interface ProcessedQuery {
   base: string;
-  basepath: string;
+  basepath?: string;
   basereferencepath?: string;
   target?: string;
   targetpath?: string;
-  operator: string;
+  operator?: string;
   value?: any;
   modifier?: string;
 }
@@ -146,6 +146,24 @@ const anyCodingEquals = (
   queryValue: { system?: string; code?: string } = {}
 ) => codings.some((coding) => codingEquals(coding, queryValue));
 
+const objectMatches = (
+  queryObject: { [key: string]: any },
+  resourceObject: { [key: string]: any }
+) => {
+  return Object.keys(queryObject).every(
+    (key) =>
+      has(resourceObject, key) && resourceObject[key] === queryObject[key]
+  );
+};
+
+const anyObjectMatches = (
+  queryObject: { [key: string]: any },
+  resourceObjects: { [key: string]: any }[]
+) =>
+  resourceObjects.some((resourceObject) =>
+    objectMatches(queryObject, resourceObject)
+  );
+
 export const matches = (
   resource: Resource,
   query: ProcessedQuery,
@@ -174,6 +192,9 @@ export const matches = (
   ) {
     return false;
   }
+
+  // return true if only the baseresourcetype is asked
+  if (!query.basepath) return true;
 
   const splitPath = query.basepath.split(".");
   for (let i = 1; i < splitPath.length; i++) {
@@ -228,13 +249,21 @@ export const matches = (
           throw new Error(`Operator ${query.operator} is not implemented yet.`);
       }
     case "object":
-      // TODO: For now we assume that it is an array of codings
-      if (isArray(resourceValue))
-        return resourceValue.some((rv) =>
-          anyCodingEquals(rv.coding, query.value)
-        );
+      if (isArray(resourceValue)) {
+        return resourceValue.some((rv) => {
+          // CodeableConcept
+          if (has(rv, "coding"))
+            return anyObjectMatches(query.value, rv.coding);
+          return objectMatches(query.value, rv);
+        });
+      }
+
+      // CodeableConcept
       if (has(resourceValue, "coding"))
-        return anyCodingEquals(resourceValue.coding, query.value);
+        return anyObjectMatches(query.value, resourceValue.coding);
+      return objectMatches(query.value, resourceValue);
+    case "undefined":
+      return false;
     default:
       throw new Error(
         `The resourcetype at path ${query.base}.${query.basepath} is not supported yet.`

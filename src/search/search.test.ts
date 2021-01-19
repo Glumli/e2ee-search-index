@@ -10,10 +10,10 @@ import * as SDK from "../sdk";
 
 const USERID = "Glumli";
 const PASSWORD = "password123";
-
+const MINKEY = "minimum";
 const indices: { [key: string]: any } = {};
 
-fdescribe("search", () => {
+describe("search", () => {
   let fetchResourceSpy: jasmine.Spy;
   let output: {
     [algorithmName: string]: {
@@ -26,7 +26,23 @@ fdescribe("search", () => {
         }[];
       };
     };
-  } = {};
+  } = {
+    [MINKEY]: {},
+  };
+
+  testconfig.testcases.forEach((testcase) => {
+    for (const [key, { length }] of Object.entries(testcase.result)) {
+      if (!output[MINKEY][key]) {
+        output[MINKEY][key] = { testcases: [], indexCreation: 0 };
+      }
+      output[MINKEY][key].testcases.push({
+        query: testcase.query.id,
+        fetches: length,
+        time: 0,
+      });
+    }
+  });
+
   beforeAll(async () => {
     fetchResourceSpy = spyOn(SDK, "fetchResource").and.callThrough();
   });
@@ -43,16 +59,16 @@ fdescribe("search", () => {
 
   // Iterate over different datasets
   Object.keys(testconfig.resources).forEach((configName) => {
-    // if (configName !== "20") return;
+    // if (configName !== "5") return;
     describe(configName, () => {
       const resources = testconfig.resources[configName];
       const testcases = testconfig.testcases;
 
-      beforeAll(async () => {
+      beforeAll((done) => {
         await resetDataBase();
         await setupUser(USERID, PASSWORD);
         const uploadedResouces = await Promise.all(
-          Object.values(resources).map((resource: SDK.Resource) => {
+          Object.values(resources).map(async (resource: SDK.Resource) => {
             // Set the identifier, as we are overwriting the id field
             const identifier = resource.identifier ? resource.identifier : [];
             const identifierResource = {
@@ -71,12 +87,14 @@ fdescribe("search", () => {
             indexCreation: 0,
             testcases: [],
           };
+
           const t0 = performance.now();
           const preprocessing = searchAlgorithms[algorithmName].preprocessing;
           indices[algorithmName] = preprocessing(uploadedResouces);
           const t1 = performance.now();
           output[algorithmName][configName].indexCreation = t1 - t0;
         });
+        done();
       });
 
       Object.keys(searchAlgorithms).forEach((algorithmName) => {
@@ -85,7 +103,8 @@ fdescribe("search", () => {
           beforeAll(() => {});
 
           testcases.forEach(({ query, result }) => {
-            it(`${configName}/${algorithmName}/${query.id}`, async (done) => {
+            // if (["val4"].indexOf(query.id) === -1) return;
+            fit(`${configName}/${algorithmName}/${query.id}`, async (done) => {
               const t0 = performance.now();
               const searchResult = await searchAlgorithms[
                 algorithmName

@@ -39,6 +39,8 @@ const processSpecifiedReferencePath = (
 
 const handleComplexPaths = (query: ProcessedQuery) => {
   const processedQuery = { ...query };
+  if (!query.basepath) return processedQuery;
+
   if (isComplexPath(query.basepath)) {
     if (isSpecifiedReference(query.basepath)) {
       const { specifiedTarget, path } = processSpecifiedReferencePath(
@@ -64,7 +66,8 @@ const processQuery = (query: Query): ProcessedQuery => {
   if (!isUndefined(query.value)) processedQuery.value = query.value;
   if (query.modifier) processedQuery.modifier = query.modifier;
 
-  processedQuery.basepath = getPath(query.base, query.baseparameter);
+  if (query.baseparameter)
+    processedQuery.basepath = getPath(query.base, query.baseparameter);
 
   if (query.target) {
     processedQuery.target = query.target;
@@ -78,7 +81,6 @@ const processQuery = (query: Query): ProcessedQuery => {
       query.basereferenceparameter
     );
   }
-
   return handleComplexPaths(processedQuery);
 };
 
