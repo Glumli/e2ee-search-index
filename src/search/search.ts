@@ -19,6 +19,6 @@ export interface SearchAlgorithm {
   ) => object;
 }
 
-export default { bruteForce, resourceTypeIndex, refIndex } as {
+export default { bruteForce, resourceTypeIndex, referenceIndex: refIndex } as {
   [key: string]: SearchAlgorithm;
 };

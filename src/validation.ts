@@ -60,6 +60,8 @@ const isReferenceNew = (reference: { identifier: object }) => {
   const isObject = typeof reference === "object";
   if (!isObject) return false;
 
+  if (Object.keys(reference).length === 0) return false;
+
   const REFERENCE_KEYS = ["reference", "type", "identifier", "display"];
   const hasUnallowedKeys = Object.keys(reference).some(
     (key) => REFERENCE_KEYS.indexOf(key) === -1

@@ -69,7 +69,7 @@ const update = (
   }
 };
 
-const generateIndex = (resources: Resource[]) => {
+const generateIndex = (resources: Resource[] = []) => {
   return resources.reduce((index, resource) => {
     return addResource(index, resource);
   }, {});

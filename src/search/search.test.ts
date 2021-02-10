@@ -10,7 +10,7 @@ import * as SDK from "../sdk";
 
 const USERID = "Glumli";
 const PASSWORD = "password123";
-const MINKEY = "minimum";
+const MINKEY = "optimum";
 const indices: { [key: string]: any } = {};
 
 describe("search", () => {
@@ -48,7 +48,12 @@ describe("search", () => {
   });
 
   afterAll(() => {
-    console.log(JSON.stringify(output));
+    console.log(
+      JSON.stringify({
+        filter_key: "log-filter",
+        message: JSON.stringify(output),
+      })
+    );
   });
 
   beforeEach(() => {});
@@ -59,12 +64,12 @@ describe("search", () => {
 
   // Iterate over different datasets
   Object.keys(testconfig.resources).forEach((configName) => {
-    // if (configName !== "5") return;
+    // if (["5", "20", "40", "75"].indexOf(configName) === -1) return;
     describe(configName, () => {
       const resources = testconfig.resources[configName];
       const testcases = testconfig.testcases;
 
-      beforeAll((done) => {
+      beforeAll(async (done) => {
         await resetDataBase();
         await setupUser(USERID, PASSWORD);
         const uploadedResouces = await Promise.all(
@@ -103,7 +108,7 @@ describe("search", () => {
           beforeAll(() => {});
 
           testcases.forEach(({ query, result }) => {
-            // if (["val4"].indexOf(query.id) === -1) return;
+            // if (["has4"].indexOf(query.id) === -1) return;
             fit(`${configName}/${algorithmName}/${query.id}`, async (done) => {
               const t0 = performance.now();
               const searchResult = await searchAlgorithms[

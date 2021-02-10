@@ -1,6 +1,6 @@
 module.exports = function (config) {
   config.set({
-    frameworks: ["jasmine", "karma-typescript"],
+    frameworks: ["jasmine", "karma-typescript", "mocha"],
 
     files: [{ pattern: "src/**/*.ts" }],
 
@@ -17,7 +17,21 @@ module.exports = function (config) {
       },
     },
 
-    reporters: ["mocha", "karma-typescript"],
+    logReporter: {
+      outputPath: "out/", // default name is current directory
+      logFileName: "logfile.log", // default name is logFile_month_day_year_hr:min:sec.log
+      filter_key: "log-filter",
+    },
+
+    plugins: [
+      "karma-log-reporter",
+      "karma-typescript",
+      "karma-jasmine",
+      "karma-mocha",
+      "karma-mocha-reporter",
+      "karma-chrome-launcher",
+    ],
+    reporters: ["mocha", "karma-typescript", "log-reporter"],
 
     browsers: ["ChromeHeadless"],
     browserNoActivityTimeout: 120000,
