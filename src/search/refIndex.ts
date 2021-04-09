@@ -11,9 +11,9 @@ import { processQuery } from "../parameterMapping";
 
 interface RefIndex {
   [resourceId: string]: {
-    resourceType: string;
-    references: { id: string; path: string }[];
-    identifier: string[];
+    rT: string; // resourceType
+    r: { i: string; p: string }[]; // references
+    i: string[];
   };
 }
 
@@ -35,21 +35,19 @@ const addResource = (index: RefIndex, resource: Resource): RefIndex => {
     (current, reference): { id: string; path: string }[] => [
       ...current,
       ...getReferenceIdentifier(resource, reference.path).map((id) => ({
-        path: reference.FHIRPath,
-        id: id,
+        p: reference.FHIRPath,
+        i: id,
       })),
     ],
     []
   );
 
-  return {
-    ...index,
-    [resource.id]: {
-      references: entries,
-      resourceType: resource.resourceType,
-      identifier: getResourceIdentifier(resource),
-    },
+  index[resource.id] = {
+    r: entries,
+    rT: resource.resourceType,
+    i: getResourceIdentifier(resource),
   };
+  return index;
 };
 
 const update = (
@@ -79,16 +77,15 @@ const search = async (
   userId: string,
   query: Query,
   index: RefIndex,
-  fetchResource: (userId: string, resourceId: string) => Promise<Resource>
+  fetchResource: (userId: string, resourceId: string) => Promise<Resource>,
+  networkCall: () => void
 ) => {
   // Without any information we have to see all resources as the context.
   let baseContextIds = Object.keys(index);
   let targetContextIds: string[] = [];
 
   if (query.base) {
-    baseContextIds = baseContextIds.filter(
-      (id) => index[id].resourceType === query.base
-    );
+    baseContextIds = baseContextIds.filter((id) => index[id].rT === query.base);
   }
 
   // TODO: Maybe adjust index to have the parameters instead of the paths?
@@ -98,20 +95,23 @@ const search = async (
   );
   // If target is not set this means that there is no reference
   if (target) {
+    // id basereferencepath is set this one is used for the reference
+    const referencingPath = basereferencepath ? basereferencepath : basepath;
+
     const tempTargetContext = Object.keys(index).filter(
-      (id) => index[id].resourceType === target
+      (id) => index[id].rT === target
     );
 
     // TODO: not super clean, as IMO filter should not have sideeffects
-    baseContextIds = baseContextIds.filter((id) => {
+    baseContextIds = baseContextIds.filter((baseId) => {
       let returnValue = false;
       // .some as we expect every identifier to only be used once
-      index[id].references.some(({ path, id }) => {
-        if (path === basereferencepath || path === basepath) {
+      index[baseId].r.some(({ p: path, i: id }) => {
+        if (path === referencingPath) {
           const matchingTarget = tempTargetContext.find(
             (targetId) =>
               targetId === id ||
-              index[targetId].identifier.some((identifier) => identifier === id)
+              index[targetId].i.some((identifier) => identifier === id)
           );
           if (matchingTarget) {
             targetContextIds.push(matchingTarget);
@@ -127,6 +127,7 @@ const search = async (
     new Set([...baseContextIds, ...targetContextIds])
   );
 
+  networkCall();
   const context = await Promise.all(
     contextIds.map((id) => fetchResource(userId, id))
   );

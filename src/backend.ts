@@ -90,11 +90,29 @@ class DataBase {
   async fetchResource(
     userId: string,
     resourceId: string
-  ): Promise<{ key: string; resource: string }> {
-    return (await this.db).get("resources", resourceId).then((response) => ({
-      key: response.data_key,
-      resource: response.resource,
-    }));
+  ): Promise<{ key: string; resource: string } | null> {
+    return (await this.db).get("resources", resourceId).then((response) =>
+      response
+        ? {
+            key: response.data_key,
+            resource: response.resource,
+          }
+        : null
+    );
+  }
+
+  async fetchResources(
+    userId: string,
+    resourceIds: string[]
+  ): Promise<{ key: string; resource: string } | null> {
+    return (await this.db).get("resources", resourceIds).then((response) =>
+      response
+        ? {
+            key: response.data_key,
+            resource: response.resource,
+          }
+        : null
+    );
   }
 
   async fetchResourceIds(userId: string): Promise<string[]> {

@@ -18,7 +18,7 @@ module.exports = function (config) {
     },
 
     logReporter: {
-      outputPath: "out/", // default name is current directory
+      outputPath: "out/log/", // default name is current directory
       logFileName: "logfile.log", // default name is logFile_month_day_year_hr:min:sec.log
       filter_key: "log-filter",
     },
@@ -34,13 +34,14 @@ module.exports = function (config) {
     reporters: ["mocha", "karma-typescript", "log-reporter"],
 
     browsers: ["ChromeHeadless"],
-    browserNoActivityTimeout: 120000,
-    browserDisconnectTimeout: 120000,
+    browserNoActivityTimeout: 600000,
+    browserDisconnectTimeout: 600000,
     browserDisconnectTolerance: 20,
+    concurrency: 1,
 
     client: {
       jasmine: {
-        timeoutInterval: 120000,
+        timeoutInterval: 600000,
       },
     },
   });

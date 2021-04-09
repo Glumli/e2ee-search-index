@@ -24,7 +24,7 @@ const years = [
   "75",
 ];
 
-years.forEach((year) => {
+["2010"].forEach((year) => {
   const SYNTHEA_DIR = `${__dirname}/../src/resources/testcases/${year}`;
   const BUNDLES_DIR = `${SYNTHEA_DIR}/bundles`;
   const RESOURCES_DIR = `${SYNTHEA_DIR}/resources`;

@@ -1,13 +1,10 @@
 import { Resource } from "../sdk";
-import { validate, getResourceIdentifier, Query } from "../validation";
+import { validate, Query } from "../validation";
 import { SearchAlgorithm } from "./search";
 import { processQuery } from "../parameterMapping";
 
 interface ResourceTypeIndex {
-  [resourceId: string]: {
-    resourceType: string;
-    identifier: string[];
-  };
+  [resourceId: string]: string;
 }
 
 const deleteResource = (
@@ -32,13 +29,8 @@ const addResource = (
   index: ResourceTypeIndex,
   resource: Resource
 ): ResourceTypeIndex => {
-  return {
-    ...index,
-    [resource.id]: {
-      resourceType: resource.resourceType,
-      identifier: getResourceIdentifier(resource),
-    },
-  };
+  index[resource.id] = resource.resourceType;
+  return index;
 };
 
 const update = (
@@ -68,7 +60,8 @@ const search = async (
   userId: string,
   query: Query,
   index: ResourceTypeIndex,
-  fetchResource: (userId: string, resourceId: string) => Promise<Resource>
+  fetchResource: (userId: string, resourceId: string) => Promise<Resource>,
+  networkCall: () => void
 ) => {
   // Without any information we have to see all resources as the context.
   let baseContextIds = Object.keys(index);
@@ -83,22 +76,19 @@ const search = async (
   } = processQuery(query);
 
   if (base) {
-    baseContextIds = baseContextIds.filter(
-      (id) => index[id].resourceType === base
-    );
+    baseContextIds = baseContextIds.filter((id) => index[id] === base);
   }
 
   // If target is not set this means that there is no reference
   if (target) {
-    targetContextIds = Object.keys(index).filter(
-      (id) => index[id].resourceType === target
-    );
+    targetContextIds = Object.keys(index).filter((id) => index[id] === target);
   }
 
   const contextIds = Array.from(
     new Set([...baseContextIds, ...targetContextIds])
   );
 
+  networkCall();
   const context = await Promise.all(
     contextIds.map((id) => fetchResource(userId, id))
   );

@@ -28,6 +28,7 @@ export interface Resource {
   id?: string;
   resourceType: string;
   identifier?: Identifier[];
+  [key: string]: any;
 }
 
 export const getUser = async (
@@ -114,10 +115,11 @@ export const fetchResource = async (
   if (!user) throw new Error(`User ${userId} does not exist.`);
   const { commonKey } = user;
 
-  const { resource: encryptedResource, key } = await database.fetchResource(
-    userId,
-    resourceId
-  );
+  const response = await database.fetchResource(userId, resourceId);
+
+  if (!response) return Promise.resolve({ id: "", resourceType: "" });
+
+  const { resource: encryptedResource, key } = response;
   const dataKey = await symDecryptString(commonKey as CryptoKey, key).then(
     importSymKeyFromBase64
   );

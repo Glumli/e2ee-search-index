@@ -45,6 +45,6 @@ function generateUML(inputDir, outputFile) {
 }
 
 generateUML(
-  `${__dirname}/../src/resources/synthea/resources/`,
-  `${__dirname}/../out/uml/resourcegraph/resourcegraph.puml`
+  `${__dirname}/../src/resources/testcases/05/resources/`,
+  `${__dirname}/../out/resources_05.puml`
 );
