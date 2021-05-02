@@ -92,8 +92,8 @@ describe("search", () => {
   const QUICK_CONFIGS = ["1", "5", "15", "25", "35", "45", "55", "65", "75"];
   const QUICK_QUICK_CONFIGS = ["1", "25", "75"];
   const ITERATIONS = IS_EVALUATION ? 3 : 3;
-  const CONFIGS = IS_EVALUATION ? ALL_CONFIGS : QUICK_QUICK_CONFIGS;
-  const ALGORITHMS = IS_EVALUATION ? ALL_ALGORITHMS : ALL_ALGORITHMS; //["referenceIndex"];
+  const CONFIGS = IS_EVALUATION ? ALL_CONFIGS : ["75"];
+  const ALGORITHMS = IS_EVALUATION ? ALL_ALGORITHMS : ["referenceIndexNew"];
   // Iterate multiple times
   for (let iteration = 0; iteration < ITERATIONS; iteration++) {
     // Iterate over different datasets
@@ -141,47 +141,47 @@ describe("search", () => {
               beforeAll(() => {});
 
               testcases.forEach(({ query, result }) => {
-                //if (query.id === "ref3") {
-                fit(`${iteration}/${configName}/${algorithmName}/${query.id}`, async (done) => {
-                  const t0 = performance.now();
-                  const searchResult = await searchAlgorithms[
-                    algorithmName
-                  ].search(
-                    USERID,
-                    query,
-                    indices[algorithmName],
-                    (userId, resourceId) =>
-                      fetchResource(userId, PASSWORD, resourceId),
-                    networkCall
-                  );
-                  const t1 = performance.now();
-                  expect(searchResult.length).toEqual(
-                    result[configName].length
-                  );
+                if (query.id === "val1") {
+                  fit(`${iteration}/${configName}/${algorithmName}/${query.id}`, async (done) => {
+                    const t0 = performance.now();
+                    const searchResult = await searchAlgorithms[
+                      algorithmName
+                    ].search(
+                      USERID,
+                      query,
+                      indices[algorithmName],
+                      (userId, resourceId) =>
+                        fetchResource(userId, PASSWORD, resourceId),
+                      networkCall
+                    );
+                    const t1 = performance.now();
+                    expect(searchResult.length).toEqual(
+                      result[configName].length
+                    );
 
-                  // logging
-                  const data = await Promise.all(
-                    fetchResourceSpy.calls
-                      .all()
-                      .map(({ returnValue }) => returnValue)
-                  );
-                  const dataSize = objectbytesize(data);
+                    // logging
+                    const data = await Promise.all(
+                      fetchResourceSpy.calls
+                        .all()
+                        .map(({ returnValue }) => returnValue)
+                    );
+                    const dataSize = objectbytesize(data);
 
-                  if (algorithmNumber === 0) {
-                    writeOptimum(configName, query.id, searchResult);
-                  }
+                    if (algorithmNumber === 0) {
+                      writeOptimum(configName, query.id, searchResult);
+                    }
 
-                  output[algorithmName][configName].testcases.push({
-                    query: query.id,
-                    fetches: fetchResourceSpy.calls.count(),
-                    time: t1 - t0,
-                    indexSize: objectbytesize(indices[algorithmName]),
-                    dataSize,
-                    networkCalls: networkCounter,
+                    output[algorithmName][configName].testcases.push({
+                      query: query.id,
+                      fetches: fetchResourceSpy.calls.count(),
+                      time: t1 - t0,
+                      indexSize: objectbytesize(indices[algorithmName]),
+                      dataSize,
+                      networkCalls: networkCounter,
+                    });
+                    done();
                   });
-                  done();
-                });
-                // }
+                }
               });
             });
           }

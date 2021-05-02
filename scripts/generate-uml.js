@@ -45,6 +45,6 @@ function generateUML(inputDir, outputFile) {
 }
 
 generateUML(
-  `${__dirname}/../src/resources/testcases/05/resources/`,
-  `${__dirname}/../out/resources_05.puml`
+  `${__dirname}/../src/resources/testcases/01/resources/`,
+  `${__dirname}/../out/resources_01.puml`
 );

@@ -10,6 +10,4 @@
 /src/resources/s4h/**/*
 /src/resources/synthea/**/*
 
-/src/parameterMapping.json
-
 /out/**/*

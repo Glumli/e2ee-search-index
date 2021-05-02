@@ -1,0 +1,30 @@
+[
+  {
+    "query": {
+      "id": "res1",
+      "base": "Procedure"
+    },
+    "result": {
+      "_comment": "Add the expected number of resource here. Those can be found by running the tests with a an algorithm known to perform correct.",
+      "0": { "length": 1 },
+      "1": { "length": 3 }
+    },
+    "description": "All procedures."
+  },
+  {
+    "query": {
+      "id": "ref1",
+      "base": "Encounter",
+      "baseparameter": "service-provider",
+      "target": "Organization",
+      "targetparameter": "name",
+      "operator": "eq",
+      "value": "PCP10127"
+    },
+    "result": {
+      "0": { "length": 0 },
+      "1": { "length": 0 }
+    },
+    "description": "All encounter performed by the organization PCP10127."
+  }
+]

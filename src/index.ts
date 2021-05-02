@@ -1,3 +1,3 @@
-import refIndex from "./search/refIndex";
+import algorithm from "./search/refIndex";
 
-export default refIndex;
+export default algorithm;

@@ -68,9 +68,64 @@ const update = (
 };
 
 const generateIndex = (resources: Resource[] = []) => {
-  return resources.reduce((index, resource) => {
+  const index = resources.reduce((index, resource) => {
     return addResource(index, resource);
-  }, {});
+  }, {}) as RefIndex;
+  let referenceCounter: number = 0;
+  const statistics: {
+    totalResources: number;
+    totalReferences: number;
+    avg?: number;
+    references: { [key: string]: number };
+    resources: {
+      [key: string]: {
+        totalResources: number;
+        totalReferences: number;
+        avg?: number;
+        references: { [key: string]: number };
+      };
+    };
+  } = {
+    totalResources: 0,
+    totalReferences: 0,
+    references: {},
+    resources: {},
+  };
+  Object.values(index).forEach((element) => {
+    statistics.totalReferences += element.r.length;
+    statistics.totalResources += 1;
+    if (!statistics.resources[element.rT]) {
+      statistics.resources[element.rT] = {
+        totalResources: 0,
+        totalReferences: 0,
+        references: {},
+      };
+    }
+    statistics.resources[element.rT].totalReferences += element.r.length;
+    statistics.resources[element.rT].totalResources += 1;
+
+    element.r.forEach((ref) => {
+      if (!statistics.references[ref.p]) {
+        statistics.references[ref.p] = 0;
+      }
+      statistics.references[ref.p] = statistics.references[ref.p] + 1;
+
+      if (!statistics.resources[element.rT].references[ref.p]) {
+        statistics.resources[element.rT].references[ref.p] = 0;
+      }
+      statistics.resources[element.rT].references[ref.p] += 1;
+    });
+  });
+  statistics.avg = statistics.totalReferences / statistics.totalResources;
+  Object.keys(statistics.resources).forEach((rt) => {
+    statistics.resources[rt].avg =
+      statistics.resources[rt].totalReferences /
+      statistics.resources[rt].totalResources;
+  });
+
+  console.log(JSON.stringify(statistics));
+
+  return index;
 };
 
 const search = async (

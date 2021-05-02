@@ -22,7 +22,7 @@ def plot_box(result_file, dataset, querytype):
     REV_ALGS = []
     for alg in ALGS:
         REV_ALGS.append(alg)
-    NETWORKS = ['Cable', '4G', 'Fast 3G', 'Regular 3G', 'Slow 3G']
+    NETWORKS = ['Cable', '4G', 'Fast 3G', 'Regular 3G', 'Slow 3G', '11']
 
     # webpagetest.org/easy
     # latency in ms, speed in Mbps
@@ -32,6 +32,7 @@ def plot_box(result_file, dataset, querytype):
         'Fast 3G': {'latency': 150, 'rate': 1.6},
         '4G': {'latency': 170, 'rate': 9.0},
         'Cable': {'latency': 28, 'rate': 5.0},
+        '11': {'latency': 1000, 'rate': 10.0}
     }
 
     plot_options = {
@@ -87,7 +88,7 @@ def plot_box(result_file, dataset, querytype):
                 networktimes = []
                 latency_sec = networks[network]['latency'] / 1000
                 # sec
-                latency_index = 1 * latency_sec if indexsizes[0] > 2 else 0
+                latency_index = 1 * latency_sec if indexsizes[0] > 4 else 0
                 # Byte / (Mbit/sec / 8 * 1000000 = Byte/Sec) = Sec + Sec
                 downloadtime_index = np.array(indexsizes) / \
                     (networks[network]['rate'] / 8 * 1000000) + latency_index
@@ -99,7 +100,7 @@ def plot_box(result_file, dataset, querytype):
                     (networks[network]['rate'] / 8 * 1000000) + latency_data
                 for i in range(len(downloadtime_data)):
                     networktimes.append(
-                        downloadtime_data[i] + downloadtime_index[i] + times[i] / 1000)  #
+                        downloadtime_data[i] + downloadtime_index[i] / 2 + times[i] / 1000)  # amount of queries per index load
                 networkstimes.append(networktimes)
             processeddata[alg] = networkstimes
 
@@ -144,6 +145,7 @@ def plot_box(result_file, dataset, querytype):
 
 
 def plot_boxes(result_file, dataset):
-    querytypes = ['', 'has', 'ref', 'res', 'val']
+    querytypes = ['']
+    # querytypes += ['has', 'ref', 'res', 'val']
     for querytype in querytypes:
         plot_box(result_file, dataset, querytype)

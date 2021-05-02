@@ -4,28 +4,10 @@ const {
   splitBundlesToResources,
 } = require("./utils/split-bundles-to-resources");
 
-const years = [
-  "05",
-  "10",
-  "15",
-  "20",
-  "25",
-  "20",
-  "25",
-  "30",
-  "35",
-  "40",
-  "45",
-  "50",
-  "55",
-  "60",
-  "65",
-  "70",
-  "75",
-];
+const datasets = ["01", "02"];
 
-["2010"].forEach((year) => {
-  const SYNTHEA_DIR = `${__dirname}/../src/resources/testcases/${year}`;
+datasets.forEach((dataset) => {
+  const SYNTHEA_DIR = `${__dirname}/../src/resources/testcases/${dataset}`;
   const BUNDLES_DIR = `${SYNTHEA_DIR}/bundles`;
   const RESOURCES_DIR = `${SYNTHEA_DIR}/resources`;
   const FILE_PATH = `${SYNTHEA_DIR}/testResources.ts`;
