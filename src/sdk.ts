@@ -15,19 +15,55 @@ import {
 } from "./crypto";
 import database from "./backend";
 
-const USERID = "Glumli";
-const PASSWORD = "password12345";
-
 export interface User {
   commonKey: string | CryptoKey;
   privateKey: string | CryptoKey;
   publicKey: string | CryptoKey;
 }
 
-const setupUser = async (
-  userId: string = USERID,
-  password: string = PASSWORD
-) => {
+interface Identifier {
+  value: string;
+}
+export interface Resource {
+  id?: string;
+  resourceType: string;
+  identifier?: Identifier[];
+  [key: string]: any;
+}
+
+export const getUser = async (
+  userId: string,
+  password: string
+): Promise<User | false> => {
+  const encrypedUser = await database.fetchUser(userId);
+  if (!encrypedUser) return false;
+
+  const passwordKey = await deriveKey(password);
+
+  const publicKey = await importPublicKeyFromSPKI(
+    encrypedUser.publicKey as string
+  );
+
+  const privateKey = await symDecryptString(
+    passwordKey,
+    encrypedUser.privateKey as string
+  ).then(importPrivateKeyFromPKCS8);
+
+  const commonKey = await asymDecryptString(
+    privateKey,
+    encrypedUser.commonKey as string
+  ).then(importSymKeyFromBase64);
+
+  return { commonKey, privateKey, publicKey };
+};
+
+export const setupUser = async (
+  userId: string,
+  password: string
+): Promise<User> => {
+  const user = await getUser(userId, password);
+  if (user) return user;
+
   const passwordKey = await deriveKey(password);
   const commonKey = await generateSymKey();
   const exportedCommonKey = await exportSymKeyToBase64(commonKey);
@@ -44,38 +80,25 @@ const setupUser = async (
   return { commonKey, privateKey, publicKey };
 };
 
-const getUser = async (
-  userId: string = USERID,
-  password: string = PASSWORD
-): Promise<User> => {
-  const passwordKey = await deriveKey(password);
-  const encrypedUser = await database.fetchUser(userId);
-  const publicKey = await importPublicKeyFromSPKI(
-    encrypedUser.publicKey as string
-  );
-  const privateKey = await symDecryptString(
-    passwordKey,
-    encrypedUser.privateKey as string
-  ).then(importPrivateKeyFromPKCS8);
-  const commonKey = await asymDecryptString(
-    privateKey,
-    encrypedUser.commonKey as string
-  ).then(importSymKeyFromBase64);
-  return { commonKey, privateKey, publicKey };
-};
+export const createResource = async (
+  userId: string,
+  password: string,
+  resource: Resource
+): Promise<Resource> => {
+  const user = await getUser(userId, password);
+  if (!user) throw new Error(`User ${userId} does not exist.`);
+  const { commonKey } = user;
 
-const createResource = async (userId: string, resource: Object) => {
   const dataKey = await generateSymKey();
   const encryptedResource = await symEncryptString(
     dataKey,
     JSON.stringify(resource)
   );
-  const { commonKey } = await getUser(userId);
   const encryptedDataKey = await symEncryptString(
     commonKey as CryptoKey,
     await exportSymKeyToBase64(dataKey)
   );
-  return await database
+  return database
     .createResource(userId, {
       resource: encryptedResource,
       key: encryptedDataKey,
@@ -83,15 +106,20 @@ const createResource = async (userId: string, resource: Object) => {
     .then((resourceId) => ({ ...resource, id: resourceId }));
 };
 
-const fetchResource = async (
+export const fetchResource = async (
   userId: string,
+  password: string,
   resourceId: string
-): Promise<Object> => {
-  const { commonKey } = await getUser(userId);
-  const { resource: encryptedResource, key } = await database.fetchResource(
-    userId,
-    resourceId
-  );
+): Promise<Resource> => {
+  const user = await getUser(userId, password);
+  if (!user) throw new Error(`User ${userId} does not exist.`);
+  const { commonKey } = user;
+
+  const response = await database.fetchResource(userId, resourceId);
+
+  if (!response) return Promise.resolve({ id: "", resourceType: "" });
+
+  const { resource: encryptedResource, key } = response;
   const dataKey = await symDecryptString(commonKey as CryptoKey, key).then(
     importSymKeyFromBase64
   );
@@ -101,17 +129,8 @@ const fetchResource = async (
   return { ...resource, id: resourceId };
 };
 
-const fetchResourceIds = async (userId: string): Promise<string[]> => {
+export const fetchResourceIds = async (userId: string): Promise<string[]> => {
   return await database.fetchResourceIds(userId);
 };
 
-const resetDataBase = () => database.reset();
-
-export {
-  createResource,
-  fetchResource,
-  fetchResourceIds,
-  setupUser,
-  getUser,
-  resetDataBase,
-};
+export const resetDataBase = () => database.reset();

@@ -1,2 +1,16 @@
+**/.DS_Store
 /node_modules/
+/coverage/**
+
+/assets/
 /dist/
+
+/src/resources/testcases/**/bundles/**
+/src/resources/testcases/**/resources/**
+/src/resources/s4h/**/*
+/src/resources/synthea/**/*
+/src/resources/genetic/**/*
+/src/resources/testcases/**/*
+
+/out/**/*
+

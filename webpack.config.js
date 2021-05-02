@@ -1,8 +1,9 @@
 const path = require("path");
 
 module.exports = {
-  entry: "./src/index.ts",
+  entry: { main: "./index.ts" },
   output: {
+    libraryTarget: "umd",
     filename: "bundle.js",
     path: path.resolve(__dirname, "dist"),
   },
@@ -18,5 +19,4 @@ module.exports = {
   resolve: {
     extensions: [".tsx", ".ts", ".js"],
   },
-  devtool: "inline-source-map",
 };
