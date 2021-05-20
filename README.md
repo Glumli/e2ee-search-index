@@ -10,7 +10,7 @@ The results can be found in `./out/log/`.
 
 ### Testresources
 
-Resources and testcases can either be downloaded [here]{} or added individually.
+Resources and testcases can either be downloaded [here](https://drive.google.com/file/d/1iH3QI7sa2-2YIJujL14p3UE3evxRZVSa/view?usp=sharing) or added individually.
 The structure of the test data can be seen in `./src/resources/example/`.
 By default the tests import the test data from `./src/resources/testcases/`.
 
