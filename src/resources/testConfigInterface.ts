@@ -12,9 +12,11 @@ export interface TestCase {
 
 export interface TestConfig {
   cohorts: {
-    [cohortName: string]: {
-      [patientName: string]: { [resourceId: string]: Resource };
-    };
+    [cohortName: string]: string[];
   };
   testcases: { [key: string]: TestCase[] };
+}
+
+export interface patientResources {
+  [resourceId: string]: Resource;
 }

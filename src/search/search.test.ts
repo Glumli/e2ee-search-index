@@ -8,9 +8,11 @@ import searchAlgorithms from "./search";
 import testconfig from "../resources/cohorts/testconfig";
 import * as SDK from "../sdk";
 
+const test = require("../resources/cohorts/Hypertension/Felix524_Donnelly343_9dd5e16a-a809-c1d5-36fd-e82d409a49ee/CarePland26e1f51-92f3-52d7-0aa2-5ee16f85dad0.json");
+
 const USERID = "Glumli";
 const PASSWORD = "password123";
-//
+
 const MINKEY = "optimum";
 
 const stringbytesize = (str: string) => new Blob([str]).size;
@@ -67,8 +69,13 @@ describe("Benchmarking Search", () => {
             const algorithmOutput: AlogrithmOutput = {};
             const algorithmOptimumOutput: AlogrithmOutput = {};
 
-            Object.entries(patients).forEach(([patientId, resources]) => {
-              describe(patientId, () => {
+            patients.forEach((patient) => {
+              const resources = fetch(
+                `../resources/cohorts/${cohortName}/${patient}/testResources.ts`
+              );
+              //                            ../resources/cohorts/Hypertension/Felix524_Donnelly343_9dd5e16a-a809-c1d5-36fd-e82d409a49ee/testResources.ts
+              // const resources = require(`../resources/cohorts/Hypertension/Felix524_Donnelly343_9dd5e16a-a809-c1d5-36fd-e82d409a49ee/testResources.ts`);
+              describe(patient, () => {
                 const patientOutput: PatientOutput = {};
                 const patientOptimumOutput: PatientOutput = {};
 
@@ -128,8 +135,8 @@ describe("Benchmarking Search", () => {
                     return;
                   });
                 });
-                algorithmOutput[patientId] = patientOutput;
-                algorithmOptimumOutput[patientId] = patientOptimumOutput;
+                algorithmOutput[patient] = patientOutput;
+                algorithmOptimumOutput[patient] = patientOptimumOutput;
               });
             });
             cohortOutput[algorithmName] = algorithmOutput;
