@@ -4,10 +4,10 @@ const {
   splitBundlesToResources,
 } = require("./utils/split-bundles-to-resources");
 
-const datasets = ["01", "02"];
+const datasets = ["01"];
 
 datasets.forEach((dataset) => {
-  const SYNTHEA_DIR = `${__dirname}/../src/resources/testcases/${dataset}`;
+  const SYNTHEA_DIR = `${__dirname}/../src/resources/synthea_example/${dataset}`;
   const BUNDLES_DIR = `${SYNTHEA_DIR}/bundles`;
   const RESOURCES_DIR = `${SYNTHEA_DIR}/resources`;
   const FILE_PATH = `${SYNTHEA_DIR}/testResources.ts`;

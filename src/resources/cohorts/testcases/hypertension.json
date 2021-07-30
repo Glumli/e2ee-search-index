@@ -1,0 +1,71 @@
+[
+  {
+    "query": {
+      "id": "res1",
+      "base": "Encounter"
+    },
+    "description": "All Encounter."
+  },
+  {
+    "query": {
+      "id": "val1",
+      "base": "Encounter",
+      "baseparameter": "status",
+      "operator": "eq",
+      "value": "active"
+    },
+    "description": "All Encounter of status active."
+  },
+
+  {
+    "query": {
+      "id": "res2",
+      "base": "MedicationRequest"
+    },
+    "description": "All MedicationRequests."
+  },
+  {
+    "query": {
+      "id": "val2",
+      "base": "MedicationRequest",
+      "baseparameter": "status",
+      "operator": "eq",
+      "value": "active"
+    },
+    "description": "All active MedicationRequests."
+  },
+  {
+    "query": {
+      "id": "val3",
+      "base": "Encounter",
+      "baseparameter": "type",
+      "operator": "eq",
+      "value": { "code": "162673000" }
+    },
+    "description": "All Encounters of type 162673000 (General examination of patient)."
+  },
+  {
+    "query": {
+      "id": "ref1",
+      "base": "MedicationRequest",
+      "baseparameter": "encounter",
+      "target": "Encounter",
+      "targetParameter": "type",
+      "operator": "eq",
+      "value": { "code": "162673000" }
+    },
+    "description": "All MedicationRequests prescribed during an encounter of type 162673000 (General examination of patient)."
+  },
+  {
+    "query": {
+      "id": "ref2",
+      "base": "MedicationRequest",
+      "baseparameter": "reason-reference",
+      "target": "Condition",
+      "targetParameter": "code",
+      "operator": "eq",
+      "value": { "code": "59621000" }
+    },
+    "description": "All MedicationRequests prescribed during an encounter of type 162673000 (General examination of patient)."
+  }
+]

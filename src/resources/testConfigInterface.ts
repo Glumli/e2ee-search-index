@@ -7,15 +7,14 @@ export interface TestQuery extends Query {
 
 export interface TestCase {
   query: TestQuery;
-  result: { [testConfigName: string]: { length: number } };
   description?: string;
 }
 
 export interface TestConfig {
-  resources: {
-    [testConfigName: string]: {
-      [resourceId: string]: Resource;
+  cohorts: {
+    [cohortName: string]: {
+      [patientName: string]: { [resourceId: string]: Resource };
     };
   };
-  testcases: TestCase[];
+  testcases: { [key: string]: TestCase[] };
 }

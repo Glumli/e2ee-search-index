@@ -5,12 +5,12 @@ import testcases from "./testcases.json";
 
 import { TestConfig } from "../testConfigInterface";
 
-const config: TestConfig = {
-  resources: {
-    0: resources00,
-    1: resources01,
-  },
-  testcases,
-};
+// const config: TestConfig = {
+//   resources: {
+//     0: resources00,
+//     1: resources01,
+//   },
+//   testcases,
+// };
 
-export default config;
+// export default config;

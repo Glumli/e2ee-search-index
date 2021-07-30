@@ -206,7 +206,9 @@
     "intent": "intent",
     "priority": "priority",
     "requester": "requester",
-    "subject": "subject"
+    "subject": "subject",
+
+    "reason-reference": "reasonReference"
   },
   "MedicationStatement": {
     "identifier": "identifier",

@@ -4,6 +4,13 @@ The framework was developed to develop, test and benchmark algorithms that use a
 
 ## Testing and Benchmarking
 
+The repository comes with a small example dataset that guides you through the process of preparing your own testdata.
+In `./src/resources/synthea_example` you will find a synthea-generated dataset of one patient and one year of medical history.
+More on generating data with synthea in [synthea](#synthea).
+The dataset contains a directory `bundles` which contains three JSON files containing one FHIR bundle each. Each FHIR bundle contains multiple FHIR resources.
+The benchmarking framework requires the resources to be stored in individual files.
+To split the bundles into individual resources run `node scripts/prepare-synthea-data.js`.
+
 To execute the tests run `npm run test`.
 During the tests different metrics are measured.
 The results can be found in `./out/log/`.
