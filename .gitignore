@@ -12,5 +12,8 @@
 /src/resources/genetic/**/*
 /src/resources/testcases/**/*
 
+/resources-server/node_modules
+/resources-server/resources
+
 /out/**/*
 

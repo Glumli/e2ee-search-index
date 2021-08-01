@@ -7,8 +7,7 @@ import {
 import searchAlgorithms from "./search";
 import testconfig from "../resources/cohorts/testconfig";
 import * as SDK from "../sdk";
-
-const test = require("../resources/cohorts/Hypertension/Felix524_Donnelly343_9dd5e16a-a809-c1d5-36fd-e82d409a49ee/CarePland26e1f51-92f3-52d7-0aa2-5ee16f85dad0.json");
+import { patientResources } from "../resources/testConfigInterface";
 
 const USERID = "Glumli";
 const PASSWORD = "password123";
@@ -70,9 +69,6 @@ describe("Benchmarking Search", () => {
             const algorithmOptimumOutput: AlogrithmOutput = {};
 
             patients.forEach((patient) => {
-              const resources = fetch(
-                `../resources/cohorts/${cohortName}/${patient}/testResources.ts`
-              );
               //                            ../resources/cohorts/Hypertension/Felix524_Donnelly343_9dd5e16a-a809-c1d5-36fd-e82d409a49ee/testResources.ts
               // const resources = require(`../resources/cohorts/Hypertension/Felix524_Donnelly343_9dd5e16a-a809-c1d5-36fd-e82d409a49ee/testResources.ts`);
               describe(patient, () => {
@@ -82,6 +78,17 @@ describe("Benchmarking Search", () => {
                 let index = {};
 
                 beforeAll(async () => {
+                  const resourceResponse = await fetch(
+                    `http://localhost:8080/resources/${cohortName}/${patient}`
+                  ).catch((e) =>
+                    console.log(
+                      `Fetching ${cohortName}/${patient} failed: `,
+                      JSON.stringify(e.message)
+                    )
+                  );
+                  const resources = JSON.parse(
+                    await (resourceResponse as Response).json()
+                  ) as patientResources;
                   await resetDataBase();
                   await setupUser(USERID, PASSWORD);
                   const uploadedResources = await Promise.all(
@@ -104,6 +111,7 @@ describe("Benchmarking Search", () => {
                     )
                   );
                   index = algorithm.preprocessing(uploadedResources);
+                  return;
                 });
 
                 afterEach(() => {
