@@ -7,8 +7,10 @@
   "scripts": {
     "build": "webpack",
     "build:watch": "webpack --watch",
-    "test": "karma start --single-run",
-    "test:watch": "karma start --watch"
+    "test:only": "karma start --single-run",
+    "test:watch": "karma start --watch",
+    "server": "cd resources-server && npm run start",
+    "test": "concurrently 'npm run server' 'npm run test:only'"
   },
   "author": "Glumli",
   "license": "ISC",
@@ -19,6 +21,7 @@
     "@types/lodash.isarray": "^4.0.6",
     "@types/lodash.isundefined": "^3.0.6",
     "base64-js": "^1.3.1",
+    "concurrently": "^6.2.0",
     "idb": "^5.0.7",
     "lodash.get": "^4.4.2",
     "lodash.has": "^4.5.2",
