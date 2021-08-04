@@ -83,10 +83,12 @@ describe("Benchmarking Search", () => {
                       `Fetching ${cohortName}/${patient} failed: ${e.message}`
                     )
                   );
-                  const res = (await (resourceResponse as Response))
+                  const res = await (resourceResponse as Response);
+                  const resString = res
                     ? await (resourceResponse as Response).json()
                     : "{}";
-                  const resources = JSON.parse(res) as patientResources;
+
+                  const resources = JSON.parse(resString) as patientResources;
                   await resetDataBase();
                   await setupUser(USERID, PASSWORD);
                   const uploadedResources = await Promise.all(
