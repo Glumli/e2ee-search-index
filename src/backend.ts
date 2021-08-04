@@ -12,7 +12,7 @@ interface DBUser {
   private_key: string;
 }
 
-const uuidv4 = () => {
+export const uuidv4 = () => {
   return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
     var r = (Math.random() * 16) | 0,
       v = c == "x" ? r : (r & 0x3) | 0x8;
@@ -25,7 +25,7 @@ class DataBase {
 
   constructor() {
     if (!("indexedDB" in window)) {
-      throw new Error("This browser does not suppert IndexedDB");
+      throw new Error("This browser does not support IndexedDB");
     }
 
     this.db = openDB(INDEXEDDB_NAME, DB_VERSION, {

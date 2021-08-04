@@ -69,8 +69,6 @@ describe("Benchmarking Search", () => {
             const algorithmOptimumOutput: AlogrithmOutput = {};
 
             patients.forEach((patient) => {
-              //                            ../resources/cohorts/Hypertension/Felix524_Donnelly343_9dd5e16a-a809-c1d5-36fd-e82d409a49ee/testResources.ts
-              // const resources = require(`../resources/cohorts/Hypertension/Felix524_Donnelly343_9dd5e16a-a809-c1d5-36fd-e82d409a49ee/testResources.ts`);
               describe(patient, () => {
                 const patientOutput: PatientOutput = {};
                 const patientOptimumOutput: PatientOutput = {};
@@ -82,8 +80,7 @@ describe("Benchmarking Search", () => {
                     `http://localhost:8080/resources/${cohortName}/${patient}`
                   ).catch((e) =>
                     console.log(
-                      `Fetching ${cohortName}/${patient} failed: `,
-                      JSON.stringify(e.message)
+                      `Fetching ${cohortName}/${patient} failed: ${e.message}`
                     )
                   );
                   const resources = JSON.parse(

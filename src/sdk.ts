@@ -13,7 +13,52 @@ import {
   importSymKeyFromBase64,
   importPublicKeyFromSPKI,
 } from "./crypto";
-import database from "./backend";
+import database, { uuidv4 } from "./backend";
+
+interface FakeDB {
+  users: { [id: string]: User };
+  records: { [id: string]: { resource: string; key: string } };
+  fetchUser: (userId: string) => Promise<User>;
+  createUser: (userId: string, user: User) => Promise<boolean>;
+  createResource: (
+    userId: string,
+    data: { resource: string; key: string }
+  ) => Promise<string>;
+  fetchResource: (
+    userId: string,
+    resourceId: string
+  ) => Promise<{ resource: string; key: string }>;
+  fetchResourceIds: (userId: string) => Promise<string[]>;
+  reset: () => Promise<boolean>;
+}
+
+const fakeDatabase: FakeDB = {
+  users: {},
+  records: {},
+  fetchUser: (userId: string) => {
+    return Promise.resolve(fakeDatabase.users[userId]);
+  },
+  createUser: (userId: string, user: User) => {
+    fakeDatabase.users[userId] = user;
+    return Promise.resolve(true);
+  },
+  createResource: (userId: string, data: { resource: string; key: string }) => {
+    const resourceId = uuidv4();
+    fakeDatabase.records[resourceId] = data;
+    return Promise.resolve(resourceId);
+  },
+  fetchResource: (userId: string, resourceId: string) => {
+    return Promise.resolve(fakeDatabase.records[resourceId]);
+  },
+  fetchResourceIds: (userId: string) => {
+    return Promise.resolve(Object.keys(fakeDatabase.records));
+  },
+  reset: () => {
+    fakeDatabase.users = {};
+    fakeDatabase.records = {};
+    return Promise.resolve(true);
+  },
+};
 
 export interface User {
   commonKey: string | CryptoKey;
@@ -35,7 +80,7 @@ export const getUser = async (
   userId: string,
   password: string
 ): Promise<User | false> => {
-  const encrypedUser = await database.fetchUser(userId);
+  const encrypedUser = await fakeDatabase.fetchUser(userId);
   if (!encrypedUser) return false;
 
   const passwordKey = await deriveKey(password);
@@ -72,7 +117,7 @@ export const setupUser = async (
     privateKey: await exportPrivateKeyToPKCS8(privateKey),
     publicKey: await exportPublicKeyToSPKI(publicKey),
   };
-  await database.createUser(userId, {
+  await fakeDatabase.createUser(userId, {
     commonKey: await asymEncryptString(publicKey, exportedCommonKey),
     privateKey: await symEncryptString(passwordKey, exportedKeyPair.privateKey),
     publicKey: exportedKeyPair.publicKey,
@@ -98,7 +143,7 @@ export const createResource = async (
     commonKey as CryptoKey,
     await exportSymKeyToBase64(dataKey)
   );
-  return database
+  return fakeDatabase
     .createResource(userId, {
       resource: encryptedResource,
       key: encryptedDataKey,
@@ -115,7 +160,7 @@ export const fetchResource = async (
   if (!user) throw new Error(`User ${userId} does not exist.`);
   const { commonKey } = user;
 
-  const response = await database.fetchResource(userId, resourceId);
+  const response = await fakeDatabase.fetchResource(userId, resourceId);
 
   if (!response) return Promise.resolve({ id: "", resourceType: "" });
 
@@ -130,7 +175,7 @@ export const fetchResource = async (
 };
 
 export const fetchResourceIds = async (userId: string): Promise<string[]> => {
-  return await database.fetchResourceIds(userId);
+  return await fakeDatabase.fetchResourceIds(userId);
 };
 
-export const resetDataBase = () => database.reset();
+export const resetDataBase = () => fakeDatabase.reset();
