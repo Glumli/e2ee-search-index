@@ -109,20 +109,20 @@ export const setupUser = async (
   const user = await getUser(userId, password);
   if (user) return user;
 
-  const passwordKey = await deriveKey(password);
-  const commonKey = await generateSymKey();
-  const exportedCommonKey = await exportSymKeyToBase64(commonKey);
-  const { privateKey, publicKey } = await generateAsymKeyPair();
-  const exportedKeyPair = {
-    privateKey: await exportPrivateKeyToPKCS8(privateKey),
-    publicKey: await exportPublicKeyToSPKI(publicKey),
-  };
-  await fakeDatabase.createUser(userId, {
-    commonKey: await asymEncryptString(publicKey, exportedCommonKey),
-    privateKey: await symEncryptString(passwordKey, exportedKeyPair.privateKey),
-    publicKey: exportedKeyPair.publicKey,
-  });
-  return { commonKey, privateKey, publicKey };
+  // const passwordKey = await deriveKey(password);
+  // const commonKey = await generateSymKey();
+  // const exportedCommonKey = await exportSymKeyToBase64(commonKey);
+  // const { privateKey, publicKey } = await generateAsymKeyPair();
+  // const exportedKeyPair = {
+  //   privateKey: await exportPrivateKeyToPKCS8(privateKey),
+  //   publicKey: await exportPublicKeyToSPKI(publicKey),
+  // };
+  // await fakeDatabase.createUser(userId, {
+  //   commonKey: await asymEncryptString(publicKey, exportedCommonKey),
+  //   privateKey: await symEncryptString(passwordKey, exportedKeyPair.privateKey),
+  //   publicKey: exportedKeyPair.publicKey,
+  // });
+  return { commonKey: "", privateKey: "", publicKey: "" };
 };
 
 export const createResource = async (
@@ -131,18 +131,20 @@ export const createResource = async (
   resource: Resource
 ): Promise<Resource> => {
   const user = await getUser(userId, password);
-  if (!user) throw new Error(`User ${userId} does not exist.`);
-  const { commonKey } = user;
+  // if (!user) throw new Error(`User ${userId} does not exist.`);
+  // const { commonKey } = user;
 
-  const dataKey = await generateSymKey();
-  const encryptedResource = await symEncryptString(
-    dataKey,
-    JSON.stringify(resource)
-  );
-  const encryptedDataKey = await symEncryptString(
-    commonKey as CryptoKey,
-    await exportSymKeyToBase64(dataKey)
-  );
+  // const dataKey = await generateSymKey();
+  // const encryptedResource = await symEncryptString(
+  //   dataKey,
+  //   JSON.stringify(resource)
+  // );
+  // const encryptedDataKey = await symEncryptString(
+  //   commonKey as CryptoKey,
+  //   await exportSymKeyToBase64(dataKey)
+  // );
+  const encryptedResource = JSON.stringify(resource);
+  const encryptedDataKey = "";
   return fakeDatabase
     .createResource(userId, {
       resource: encryptedResource,
@@ -157,20 +159,21 @@ export const fetchResource = async (
   resourceId: string
 ): Promise<Resource> => {
   const user = await getUser(userId, password);
-  if (!user) throw new Error(`User ${userId} does not exist.`);
-  const { commonKey } = user;
+  // if (!user) throw new Error(`User ${userId} does not exist.`);
+  // const { commonKey } = user;
 
   const response = await fakeDatabase.fetchResource(userId, resourceId);
 
-  if (!response) return Promise.resolve({ id: "", resourceType: "" });
+  // if (!response) return Promise.resolve({ id: "", resourceType: "" });
 
-  const { resource: encryptedResource, key } = response;
-  const dataKey = await symDecryptString(commonKey as CryptoKey, key).then(
-    importSymKeyFromBase64
-  );
-  const resource = await symDecryptString(dataKey, encryptedResource).then(
-    JSON.parse
-  );
+  // const { resource: encryptedResource, key } = response;
+  // const dataKey = await symDecryptString(commonKey as CryptoKey, key).then(
+  //   importSymKeyFromBase64
+  // );
+  // const resource = await symDecryptString(dataKey, encryptedResource).then(
+  //   JSON.parse
+  // );
+  const resource = JSON.parse(response.resource);
   return { ...resource, id: resourceId };
 };
 
