@@ -1,6 +1,7 @@
 const express = require("express");
 const app = express();
 var cors = require("cors");
+const process = require("process");
 
 app.use(cors());
 
@@ -12,9 +13,11 @@ app.get("/resources/:cohort/:user", (req, res) => {
   try {
     let resources = require(`./resources/${cohort}/${user}/testResources.js`);
     res.status(200).json(JSON.stringify(resources));
+    delete resources;
   } catch (e) {
     res.status(200).json(JSON.stringify({}));
   }
+  console.log(process.memoryUsage());
 });
 
 app.listen(PORT, () => {
