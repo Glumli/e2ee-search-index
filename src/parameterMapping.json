@@ -207,7 +207,7 @@
     "priority": "priority",
     "requester": "requester",
     "subject": "subject",
-
+    "code": "medicationCodeableConcept",
     "reason-reference": "reasonReference"
   },
   "MedicationStatement": {

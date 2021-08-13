@@ -29,7 +29,6 @@ app.get("/resources/:cohort/:user", (req, res) => {
   } catch (e) {
     res.status(200).json(JSON.stringify({}));
   }
-  console.log(process.memoryUsage());
 });
 
 app.listen(PORT, () => {

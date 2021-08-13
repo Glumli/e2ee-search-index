@@ -130,7 +130,7 @@ describe("Benchmarking Search", () => {
                       networkCall
                     );
 
-                    console.log("Results:", result.length);
+                    // console.log(testcase.query.id, result.length);
 
                     patientOutput[testcase.query.id] = {
                       fetches: fetchResourceSpy.calls.count(),
