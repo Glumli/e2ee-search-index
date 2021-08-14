@@ -104,5 +104,18 @@
       "value": { "code": "310798" }
     },
     "description": "All Conditions for which the medication of type 310798 (Hydrochlorothiazide 25 MG Oral Tablet) was prescribed for."
+  },
+  {
+    "query": {
+      "id": "has3",
+      "modifier": "_has",
+      "base": "Claim",
+      "baseparameter": "status",
+      "basereferenceparameter": "prescription",
+      "target": "MedicationRequest",
+      "operator": "eq",
+      "value": "active"
+    },
+    "description": "All Conditions for which the medication of type 310798 (Hydrochlorothiazide 25 MG Oral Tablet) was prescribed for."
   }
 ]

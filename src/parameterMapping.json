@@ -954,7 +954,8 @@
     "status": "status",
     "subdetail-udi": "item.detail.subDetail.udi",
     "use": "use",
-    "diagnosis": "diagnosis.diagnosisReference"
+    "diagnosis": "diagnosis.diagnosisReference",
+    "prescription": "prescription"
   },
   "ClaimResponse": {
     "created": "created",
