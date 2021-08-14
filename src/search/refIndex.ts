@@ -90,9 +90,8 @@ const search = async (
 
   // TODO: Maybe adjust index to have the parameters instead of the paths?
   // Current: The path as mapped to is in the index
-  const { basepath, target, basereferencepath, targetpath } = processQuery(
-    query
-  );
+  const { basepath, target, basereferencepath, targetpath } =
+    processQuery(query);
   // If target is not set this means that there is no reference
   if (target) {
     // id basereferencepath is set this one is used for the reference
@@ -110,8 +109,8 @@ const search = async (
         if (path === referencingPath) {
           const matchingTarget = tempTargetContext.find(
             (targetId) =>
-              targetId === id ||
-              index[targetId].i.some((identifier) => identifier === id)
+              id.endsWith(targetId) ||
+              index[targetId].i.some((identifier) => id.endsWith(identifier))
           );
           if (matchingTarget) {
             targetContextIds.push(matchingTarget);
