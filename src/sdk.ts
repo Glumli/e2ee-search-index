@@ -173,7 +173,7 @@ export const fetchResource = async (
   // const resource = await symDecryptString(dataKey, encryptedResource).then(
   //   JSON.parse
   // );
-  const resource = JSON.parse(response.resource);
+  const resource = response ? JSON.parse(response.resource) : {};
   return { ...resource, id: resourceId };
 };
 

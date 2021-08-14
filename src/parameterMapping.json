@@ -953,7 +953,8 @@
     "provider": "provider",
     "status": "status",
     "subdetail-udi": "item.detail.subDetail.udi",
-    "use": "use"
+    "use": "use",
+    "diagnosis": "diagnosis.diagnosisReference"
   },
   "ClaimResponse": {
     "created": "created",

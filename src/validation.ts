@@ -126,9 +126,10 @@ const references = (
 ): boolean => {
   const referencedIdentifier = getReferenceIdentifier(base, basereferencepath);
   const targetIdentifier = [...getResourceIdentifier(target), target.id];
-  return referencedIdentifier.some(
-    (refId) => targetIdentifier.indexOf(refId) > -1
-  );
+  return referencedIdentifier.some((refId) => {
+    // console.log(refId);
+    return targetIdentifier.findIndex((id) => refId.endsWith(id)) > -1;
+  });
 };
 
 const codingEquals = (

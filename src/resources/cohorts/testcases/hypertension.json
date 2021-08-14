@@ -8,6 +8,13 @@
   },
   {
     "query": {
+      "id": "res2",
+      "base": "MedicationRequest"
+    },
+    "description": "All MedicationRequests."
+  },
+  {
+    "query": {
       "id": "val1",
       "base": "MedicationRequest",
       "baseparameter": "code",
@@ -15,36 +22,6 @@
       "value": { "code": "310798" }
     },
     "description": "All MedicationRequests of type 310798 (Hydrochlorothiazide 25 MG Oral Tablet) was prescribed for."
-  },
-  {
-    "query": {
-      "id": "has1",
-      "modifier": "_has",
-      "base": "MedicationRequest",
-      "baseparameter": "code",
-      "basereferenceparameter": "reason-reference",
-      "target": "Condition",
-      "operator": "eq",
-      "value": { "code": "310798" }
-    },
-    "description": "All Conditions for which the medication of type 310798 (Hydrochlorothiazide 25 MG Oral Tablet) was prescribed for."
-  },
-  {
-    "query": {
-      "id": "val1",
-      "base": "Encounter",
-      "baseparameter": "status",
-      "operator": "eq",
-      "value": "active"
-    },
-    "description": "All Encounter of status active."
-  },
-  {
-    "query": {
-      "id": "res2",
-      "base": "MedicationRequest"
-    },
-    "description": "All MedicationRequests."
   },
   {
     "query": {
@@ -88,6 +65,44 @@
       "operator": "eq",
       "value": { "code": "59621000" }
     },
-    "description": "All MedicationRequests prescribed during an encounter of type 162673000 (General examination of patient)."
+    "description": "All MedicationRequests prescribed because of the Condition of code 59621000 (Hypertension)."
+  },
+  {
+    "query": {
+      "id": "ref3",
+      "base": "Claim",
+      "baseparameter": "diagnosis",
+      "target": "Condition",
+      "targetParameter": "code",
+      "operator": "eq",
+      "value": { "code": "59621000" }
+    },
+    "description": "All Claims related to the Condition  of code 59621000 (Hypertension)."
+  },
+  {
+    "query": {
+      "id": "has1",
+      "modifier": "_has",
+      "base": "Encounter",
+      "baseparameter": "status",
+      "basereferenceparameter": "reason-reference",
+      "target": "DocumentReference",
+      "operator": "eq",
+      "value": { "code": "310798" }
+    },
+    "description": "All Conditions for which the medication of type 310798 (Hydrochlorothiazide 25 MG Oral Tablet) was prescribed for."
+  },
+  {
+    "query": {
+      "id": "has2",
+      "base": "Claim",
+      "baseparameter": "status",
+      "basereferenceparameter": "provider",
+      "target": "Organization",
+      "modifier": "_has",
+      "operator": "eq",
+      "value": "active"
+    },
+    "description": "All Organizations with open Claims"
   }
 ]
