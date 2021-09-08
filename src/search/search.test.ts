@@ -136,6 +136,7 @@ describe("Benchmarking Search", () => {
                     };
                     patientOptimumOutput[testcase.query.id] = {
                       fetches: result.length,
+                      resultSize: stringbytesize(JSON.stringify(result)),
                       networkCalls: 1,
                     };
                     return;
