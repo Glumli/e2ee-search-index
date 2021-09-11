@@ -130,7 +130,13 @@ describe("Benchmarking Search", () => {
                       networkCall
                     );
 
-                    let rs = objectbytesize(result);
+                    let optrs = objectbytesize(result);
+                    const data = await Promise.all(
+                      fetchResourceSpy.calls
+                        .all()
+                        .map(({ returnValue }) => returnValue)
+                    );
+                    let rs = objectbytesize(data);
                     patientOutput[testcase.query.id] = {
                       fetches: fetchResourceSpy.calls.count(),
                       resultSize: rs,
@@ -138,7 +144,7 @@ describe("Benchmarking Search", () => {
                     };
                     patientOptimumOutput[testcase.query.id] = {
                       fetches: result.length,
-                      resultSize: rs,
+                      resultSize: optrs,
                       networkCalls: 1,
                     };
                     return;
