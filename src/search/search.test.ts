@@ -130,13 +130,15 @@ describe("Benchmarking Search", () => {
                       networkCall
                     );
 
+                    let rs = objectbytesize(result);
                     patientOutput[testcase.query.id] = {
                       fetches: fetchResourceSpy.calls.count(),
+                      resultSize: rs,
                       networkCalls: networkCounter,
                     };
                     patientOptimumOutput[testcase.query.id] = {
                       fetches: result.length,
-                      resultSize: stringbytesize(JSON.stringify(result)),
+                      resultSize: rs,
                       networkCalls: 1,
                     };
                     return;
