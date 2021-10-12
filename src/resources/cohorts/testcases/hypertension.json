@@ -15,13 +15,20 @@
   },
   {
     "query": {
+      "id": "res3",
+      "base": "AllergyIntolerance"
+    },
+    "description": "All AllergyIntolerance."
+  },
+  {
+    "query": {
       "id": "val1",
       "base": "MedicationRequest",
       "baseparameter": "code",
       "operator": "eq",
       "value": { "code": "310798" }
     },
-    "description": "All MedicationRequests of type 310798 (Hydrochlorothiazide 25 MG Oral Tablet) was prescribed for."
+    "description": "All MedicationRequests of type 310798 (Hydrochlorothiazide 25 MG Oral Tablet)."
   },
   {
     "query": {
@@ -42,6 +49,16 @@
       "value": { "code": "162673000" }
     },
     "description": "All Encounters of type 162673000 (General examination of patient)."
+  },
+  {
+    "query": {
+      "id": "val4",
+      "base": "Condition",
+      "baseparameter": "code",
+      "operator": "eq",
+      "value": { "code": "59621000" }
+    },
+    "description": "When was Hypertension diagnosed?"
   },
   {
     "query": {
@@ -116,6 +133,6 @@
       "operator": "eq",
       "value": "active"
     },
-    "description": "All Conditions for which the medication of type 310798 (Hydrochlorothiazide 25 MG Oral Tablet) was prescribed for."
+    "description": "All Claims that are open for Medications."
   }
 ]
